@@ -99,6 +99,8 @@
 
 ## 📌 模型设置
 
+- 模型的下载链接:https://pan.baidu.com/s/1xx6KEsdyj9bvV5MlGZcvLQ?pwd=ukr2
+
 ### YOLO模型
 - 将YOLO模型文件 (.pt) 放入 `ComfyUI/models/yolo/` 目录
 - 推荐使用 YOLOv8 模型，如 yolov8n.pt 或 yolov8s.pt
