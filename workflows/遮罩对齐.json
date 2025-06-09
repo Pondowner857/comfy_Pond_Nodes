@@ -1,0 +1,297 @@
+{
+  "id": "a3b5f4ba-dc9f-4193-bb53-20e6fe4cb42e",
+  "revision": 0,
+  "last_node_id": 9,
+  "last_link_id": 13,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "LoadImage",
+      "pos": [
+        14046.4970703125,
+        2865.963134765625
+      ],
+      "size": [
+        270,
+        314
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "图像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "label": "遮罩",
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.39",
+        "Node name for S&R": "LoadImage",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "02ea0ac8-f9fd-4487-86b7-80923f50ff32.png",
+        "image"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "MaskPreview+",
+      "pos": [
+        14901.080078125,
+        2881.95361328125
+      ],
+      "size": [
+        140,
+        26
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "遮罩",
+          "name": "mask",
+          "type": "MASK",
+          "link": 12
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui_essentials",
+        "ver": "9d9f4bedfc9f0321c19faf71855e228c93bd0dc9",
+        "Node name for S&R": "MaskPreview+",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 4,
+      "type": "LoadImage",
+      "pos": [
+        14053.3466796875,
+        3241.991455078125
+      ],
+      "size": [
+        270,
+        314
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "图像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "label": "遮罩",
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.39",
+        "Node name for S&R": "LoadImage",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "02ea0ac8-f9fd-4487-86b7-80923f50ff32.png",
+        "image"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "MaskPreview+",
+      "pos": [
+        14906.8564453125,
+        3066.893310546875
+      ],
+      "size": [
+        140,
+        26
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "遮罩",
+          "name": "mask",
+          "type": "MASK",
+          "link": 13
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui_essentials",
+        "ver": "9d9f4bedfc9f0321c19faf71855e228c93bd0dc9",
+        "Node name for S&R": "MaskPreview+",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 8,
+      "type": "MaskSizeAlign",
+      "pos": [
+        14500.93359375,
+        2985.720458984375
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "基准遮罩",
+          "name": "基准遮罩",
+          "type": "MASK",
+          "link": 10
+        },
+        {
+          "label": "遮罩2",
+          "name": "遮罩2",
+          "type": "MASK",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "label": "基准遮罩",
+          "name": "基准遮罩",
+          "type": "MASK",
+          "links": [
+            12
+          ]
+        },
+        {
+          "label": "对齐后遮罩",
+          "name": "对齐后遮罩",
+          "type": "MASK",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MaskSizeAlign",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "居中对齐"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "CR Text",
+      "pos": [
+        14416.9580078125,
+        2727.228515625
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "文本",
+          "name": "text",
+          "type": "*",
+          "links": null
+        },
+        {
+          "label": "显示帮助",
+          "name": "show_help",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
+        "Node name for S&R": "CR Text",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "基于白色区域进行对齐。以基准遮罩为定位点进行白色区域的对其，然后进行扩展黑色区域，使总尺寸的大小等于基准遮罩的大小"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [
+      10,
+      2,
+      1,
+      8,
+      0,
+      "MASK"
+    ],
+    [
+      11,
+      4,
+      1,
+      8,
+      1,
+      "MASK"
+    ],
+    [
+      12,
+      8,
+      0,
+      5,
+      0,
+      "MASK"
+    ],
+    [
+      13,
+      8,
+      1,
+      6,
+      0,
+      "MASK"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ue_links": [],
+    "ds": {
+      "scale": 1.3109994191500147,
+      "offset": [
+        -14067.013926241145,
+        -2618.428088501544
+      ]
+    },
+    "frontendVersion": "1.21.6"
+  },
+  "version": 0.4
+}

@@ -3,22 +3,12 @@ import numpy as np
 from typing import Tuple, List, Optional, Union
 
 class MaskMultiAlignMergeNode:
-    """
-    多遮罩智能对齐合并节点
-    
-    Features:
-    - 📦 支持2-8个遮罩同时输入
-    - 🎯 9种对齐方式（包括四角对齐）
-    - 🛠️ 自定义偏移微调
-    - 📊 保持原始尺寸，无缩放处理
-    - 📈 详细的合并统计信息
-    """
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "遮罩1": ("MASK",),
+                "基准遮罩": ("MASK",),
                 "遮罩2": ("MASK",),
                 "对齐方式": (["居中对齐", "左对齐", "右对齐", "上对齐", "下对齐", 
                              "左上对齐", "右上对齐", "左下对齐", "右下对齐"],
@@ -83,92 +73,69 @@ class MaskMultiAlignMergeNode:
         }
         return mapping.get(mode_cn, "add")
     
-    def calculate_alignment_offsets(self, mask1_shape, mask2_shape, mask1_bounds, mask2_bounds, 
-                                  alignment: str, offset_x: int = 0, offset_y: int = 0) -> Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, int]]:
-        """计算对齐偏移量"""
-        h1, w1 = mask1_shape
-        h2, w2 = mask2_shape
-        x1, y1, w1_content, h1_content = mask1_bounds
-        x2, y2, w2_content, h2_content = mask2_bounds
+    def calculate_alignment_offset_to_base(self, base_bounds: Tuple[int, int, int, int], 
+                                         mask_bounds: Tuple[int, int, int, int], 
+                                         alignment: str, offset_x: int = 0, offset_y: int = 0) -> Tuple[int, int]:
+        """计算相对于基准遮罩的对齐偏移量"""
+        base_x, base_y, base_w, base_h = base_bounds
+        mask_x, mask_y, mask_w, mask_h = mask_bounds
         
-        # 计算画布尺寸和基础偏移
+        # 计算基准遮罩和当前遮罩的中心点
+        base_center_x = base_x + base_w // 2
+        base_center_y = base_y + base_h // 2
+        mask_center_x = mask_x + mask_w // 2
+        mask_center_y = mask_y + mask_h // 2
+        
         if alignment == "center":
-            canvas_w = max(w1, w2)
-            canvas_h = max(h1, h2)
-            offset1_x = (canvas_w - w1) // 2
-            offset1_y = (canvas_h - h1) // 2
-            offset2_x = (canvas_w - w2) // 2
-            offset2_y = (canvas_h - h2) // 2
+            # 居中对齐：将当前遮罩的中心对齐到基准遮罩的中心
+            offset_x_calc = base_center_x - mask_center_x
+            offset_y_calc = base_center_y - mask_center_y
             
         elif alignment == "left":
-            canvas_w = max(x1 + w1, x2 + w2)
-            canvas_h = max(h1, h2)
-            offset1_x = 0
-            offset1_y = (canvas_h - h1) // 2
-            offset2_x = x1 - x2
-            offset2_y = (canvas_h - h2) // 2
+            # 左对齐：对齐到基准遮罩的左边缘，垂直居中
+            offset_x_calc = base_x - mask_x
+            offset_y_calc = base_center_y - mask_center_y
             
         elif alignment == "right":
-            canvas_w = max(w1, w2)
-            canvas_h = max(h1, h2)
-            offset1_x = canvas_w - w1
-            offset1_y = (canvas_h - h1) // 2
-            offset2_x = canvas_w - w2 - (x2 - x1)
-            offset2_y = (canvas_h - h2) // 2
+            # 右对齐：对齐到基准遮罩的右边缘，垂直居中
+            offset_x_calc = (base_x + base_w) - (mask_x + mask_w)
+            offset_y_calc = base_center_y - mask_center_y
             
         elif alignment == "top":
-            canvas_w = max(w1, w2)
-            canvas_h = max(y1 + h1, y2 + h2)
-            offset1_x = (canvas_w - w1) // 2
-            offset1_y = 0
-            offset2_x = (canvas_w - w2) // 2
-            offset2_y = y1 - y2
+            # 上对齐：对齐到基准遮罩的上边缘，水平居中
+            offset_x_calc = base_center_x - mask_center_x
+            offset_y_calc = base_y - mask_y
             
         elif alignment == "bottom":
-            canvas_w = max(w1, w2)
-            canvas_h = max(h1, h2)
-            offset1_x = (canvas_w - w1) // 2
-            offset1_y = canvas_h - h1
-            offset2_x = (canvas_w - w2) // 2
-            offset2_y = canvas_h - h2 - (y2 - y1)
+            # 下对齐：对齐到基准遮罩的下边缘，水平居中
+            offset_x_calc = base_center_x - mask_center_x
+            offset_y_calc = (base_y + base_h) - (mask_y + mask_h)
             
         elif alignment == "top-left":
-            canvas_w = max(x1 + w1, x2 + w2)
-            canvas_h = max(y1 + h1, y2 + h2)
-            offset1_x = 0
-            offset1_y = 0
-            offset2_x = x1 - x2
-            offset2_y = y1 - y2
+            # 左上对齐：对齐到基准遮罩的左上角
+            offset_x_calc = base_x - mask_x
+            offset_y_calc = base_y - mask_y
             
         elif alignment == "top-right":
-            canvas_w = max(w1, w2)
-            canvas_h = max(y1 + h1, y2 + h2)
-            offset1_x = canvas_w - w1
-            offset1_y = 0
-            offset2_x = canvas_w - w2 - (x2 - x1)
-            offset2_y = y1 - y2
+            # 右上对齐：对齐到基准遮罩的右上角
+            offset_x_calc = (base_x + base_w) - (mask_x + mask_w)
+            offset_y_calc = base_y - mask_y
             
         elif alignment == "bottom-left":
-            canvas_w = max(x1 + w1, x2 + w2)
-            canvas_h = max(h1, h2)
-            offset1_x = 0
-            offset1_y = canvas_h - h1
-            offset2_x = x1 - x2
-            offset2_y = canvas_h - h2 - (y2 - y1)
+            # 左下对齐：对齐到基准遮罩的左下角
+            offset_x_calc = base_x - mask_x
+            offset_y_calc = (base_y + base_h) - (mask_y + mask_h)
             
         elif alignment == "bottom-right":
-            canvas_w = max(w1, w2)
-            canvas_h = max(h1, h2)
-            offset1_x = canvas_w - w1
-            offset1_y = canvas_h - h1
-            offset2_x = canvas_w - w2 - (x2 - x1)
-            offset2_y = canvas_h - h2 - (y2 - y1)
+            # 右下对齐：对齐到基准遮罩的右下角
+            offset_x_calc = (base_x + base_w) - (mask_x + mask_w)
+            offset_y_calc = (base_y + base_h) - (mask_y + mask_h)
         
         # 应用自定义偏移
-        offset2_x += offset_x
-        offset2_y += offset_y
+        offset_x_calc += offset_x
+        offset_y_calc += offset_y
         
-        return (canvas_w, canvas_h), (offset1_x, offset1_y), (offset2_x, offset2_y)
+        return offset_x_calc, offset_y_calc
     
     def apply_merge_mode_optimized(self, base_region: torch.Tensor, overlay_mask: torch.Tensor, 
                                  mode: str) -> torch.Tensor:
@@ -220,7 +187,7 @@ class MaskMultiAlignMergeNode:
                 canvas[start_y:end_y, start_x:end_x], mask_region, mode
             )
 
-    def multi_merge_masks(self, 遮罩1, 遮罩2, 对齐方式, 合并模式, 
+    def multi_merge_masks(self, 基准遮罩, 遮罩2, 对齐方式, 合并模式, 
                          遮罩3=None, 遮罩4=None, 遮罩5=None, 遮罩6=None, 遮罩7=None, 遮罩8=None,
                          X轴偏移=0, Y轴偏移=0):
         """多遮罩合并主函数"""
@@ -228,14 +195,14 @@ class MaskMultiAlignMergeNode:
         start_time = time.time()
         
         # 收集所有非空遮罩
-        all_masks = [遮罩1, 遮罩2]
+        all_masks = [基准遮罩, 遮罩2]
         optional_masks = [遮罩3, 遮罩4, 遮罩5, 遮罩6, 遮罩7, 遮罩8]
         
         for mask in optional_masks:
             if mask is not None:
                 all_masks.append(mask)
         
-        print(f"📦 开始处理 {len(all_masks)} 个遮罩的合并操作")
+        print(f"📦 开始处理 {len(all_masks)} 个遮罩的合并操作（以第一个遮罩为基准）")
         
         # 翻译参数
         alignment = self.translate_alignment(对齐方式)
@@ -263,48 +230,69 @@ class MaskMultiAlignMergeNode:
             if len(all_masks[i].shape) == 2:
                 all_masks[i] = all_masks[i].unsqueeze(0)
         
-        # 逐步合并所有遮罩
-        result_mask = all_masks[0][0]  # 从第一个遮罩开始
+        # 获取基准遮罩的边界信息
+        base_mask = all_masks[0][0]
+        base_bounds = self.get_mask_bounds_optimized(base_mask)
+        
+        # 检查基准遮罩有效性
+        if base_bounds[2] == 0 or base_bounds[3] == 0:
+            print(f"⚠️ 警告: 基准遮罩没有有效像素，使用整体尺寸")
+            base_bounds = (0, 0, base_mask.shape[1], base_mask.shape[0])
+        
+        # 计算所有遮罩相对于基准遮罩的偏移量
+        all_offsets = [(0, 0)]  # 基准遮罩不需要偏移
+        max_left = 0
+        max_right = base_mask.shape[1]
+        max_top = 0
+        max_bottom = base_mask.shape[0]
         
         for i in range(1, len(all_masks)):
             current_mask = all_masks[i][0]
-            
-            # 获取边界信息
-            result_bounds = self.get_mask_bounds_optimized(result_mask)
             current_bounds = self.get_mask_bounds_optimized(current_mask)
-            
-            # 检查有效性
-            if result_bounds[2] == 0 or result_bounds[3] == 0:
-                print(f"⚠️ 警告: 当前结果遮罩没有有效像素，使用整体尺寸")
-                result_bounds = (0, 0, result_mask.shape[1], result_mask.shape[0])
             
             if current_bounds[2] == 0 or current_bounds[3] == 0:
                 print(f"⚠️ 警告: 遮罩{i+1}没有有效像素，使用整体尺寸")
                 current_bounds = (0, 0, current_mask.shape[1], current_mask.shape[0])
             
-            # 计算对齐
-            canvas_size, result_offsets, current_offsets = self.calculate_alignment_offsets(
-                result_mask.shape, current_mask.shape, result_bounds, current_bounds, 
-                alignment, X轴偏移, Y轴偏移
+            # 计算相对于基准遮罩的偏移
+            offset_x, offset_y = self.calculate_alignment_offset_to_base(
+                base_bounds, current_bounds, alignment, X轴偏移, Y轴偏移
             )
+            all_offsets.append((offset_x, offset_y))
             
-            canvas_w, canvas_h = canvas_size
+            # 更新画布边界
+            max_left = min(max_left, offset_x)
+            max_right = max(max_right, offset_x + current_mask.shape[1])
+            max_top = min(max_top, offset_y)
+            max_bottom = max(max_bottom, offset_y + current_mask.shape[0])
+        
+        # 计算最终画布尺寸
+        canvas_w = max_right - max_left
+        canvas_h = max_bottom - max_top
+        
+        # 创建画布
+        canvas = torch.zeros((canvas_h, canvas_w), dtype=base_mask.dtype, device=target_device)
+        
+        # 放置所有遮罩
+        for i, (mask, (offset_x, offset_y)) in enumerate(zip(all_masks, all_offsets)):
+            mask_2d = mask[0]
+            # 调整偏移量以适应画布
+            adjusted_offset_x = offset_x - max_left
+            adjusted_offset_y = offset_y - max_top
             
-            # 创建新画布
-            new_canvas = torch.zeros((canvas_h, canvas_w), dtype=result_mask.dtype, device=target_device)
-            
-            # 放置当前结果
-            self._place_mask_optimized(new_canvas, result_mask, 
-                                     result_offsets[0], result_offsets[1], "replace")
-            
-            # 合并新遮罩
-            self._place_mask_optimized(new_canvas, current_mask, 
-                                     current_offsets[0], current_offsets[1], merge_mode)
-            
-            result_mask = new_canvas
-            print(f"✅ 已合并遮罩{i+1}，当前画布尺寸: {canvas_w}x{canvas_h}")
+            if i == 0:
+                # 基准遮罩直接放置
+                self._place_mask_optimized(canvas, mask_2d, 
+                                         adjusted_offset_x, adjusted_offset_y, "replace")
+                print(f"✅ 放置基准遮罩，位置: ({adjusted_offset_x}, {adjusted_offset_y})")
+            else:
+                # 其他遮罩使用指定的合并模式
+                self._place_mask_optimized(canvas, mask_2d, 
+                                         adjusted_offset_x, adjusted_offset_y, merge_mode)
+                print(f"✅ 合并遮罩{i+1}，位置: ({adjusted_offset_x}, {adjusted_offset_y})，使用{合并模式}")
         
         # 调整输出格式
+        result_mask = canvas
         if not original_batch:
             if len(result_mask.shape) == 3:
                 result_mask = result_mask.squeeze(0)
@@ -324,7 +312,7 @@ class MaskMultiAlignMergeNode:
         print(f"""🎯 多遮罩合并完成统计:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📐 最终画布尺寸: {canvas_w} × {canvas_h} 像素
-🎯 对齐方式: {对齐方式}
+🎯 对齐方式: {对齐方式}（相对于基准遮罩）
 🔧 合并模式: {合并模式}
 ⏱️ 处理时间: {processing_time:.3f} 秒
 📦 合并遮罩数量: {len(all_masks)} 个
@@ -340,13 +328,13 @@ class MaskMultiAlignMergeNode:
 
 # 简化版节点 - 保持向后兼容
 class MaskAlignMergeSimpleNode:
-    """简化版遮罩合并节点"""
+    """简化版遮罩合并节点（基准遮罩版）"""
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "遮罩1": ("MASK",),
+                "基准遮罩": ("MASK",),
                 "遮罩2": ("MASK",),
                 "对齐方式": (["居中对齐", "左对齐", "右对齐", "上对齐", "下对齐"], {"default": "居中对齐"}),
                 "合并模式": (["相加模式", "最大值模式", "最小值模式"], {"default": "相加模式"}),
@@ -358,11 +346,11 @@ class MaskAlignMergeSimpleNode:
     FUNCTION = "simple_merge_masks"
     CATEGORY = "🐳Pond/mask"
     
-    def simple_merge_masks(self, 遮罩1, 遮罩2, 对齐方式, 合并模式):
+    def simple_merge_masks(self, 基准遮罩, 遮罩2, 对齐方式, 合并模式):
         """简化的遮罩合并"""
         # 使用多遮罩节点的核心功能
         multi_node = MaskMultiAlignMergeNode()
-        merged, = multi_node.multi_merge_masks(遮罩1, 遮罩2, 对齐方式, 合并模式)
+        merged, = multi_node.multi_merge_masks(基准遮罩, 遮罩2, 对齐方式, 合并模式)
         return (merged,)
 
 

@@ -3,9 +3,9 @@ import torch.nn.functional as F
 
 class MaskSizeAlign:
     """
-    ComfyUI插件：遮罩尺寸对齐
-    输入两个遮罩，将小尺寸的遮罩通过扩展黑色区域对齐到大尺寸
-    保持白色区域的位置和大小不变，通过左右/上下平均扩展黑色区域
+    ComfyUI插件：遮罩尺寸对齐（基准遮罩版）
+    将第二个遮罩调整到基准遮罩的尺寸，并按指定方式对齐
+    保持遮罩2的内容区域不变，通过添加黑色边缘实现对齐
     """
     
     def __init__(self):
@@ -15,190 +15,274 @@ class MaskSizeAlign:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "mask1": ("MASK",),
-                "mask2": ("MASK",),
+                "基准遮罩": ("MASK",),
+                "遮罩2": ("MASK",),
+                "对齐方式": (["居中对齐", "左对齐", "右对齐", "上对齐", "下对齐", 
+                           "左上对齐", "右上对齐", "左下对齐", "右下对齐"], 
+                          {"default": "居中对齐"}),
             }
         }
     
     RETURN_TYPES = ("MASK", "MASK")
-    RETURN_NAMES = ("对齐遮罩1", "对齐遮罩2")
-    FUNCTION = "align_mask_sizes"
+    RETURN_NAMES = ("基准遮罩", "对齐后遮罩")
+    FUNCTION = "align_mask_to_base"
     CATEGORY = "🐳Pond/mask"
     OUTPUT_NODE = False
     
-    def expand_mask_to_size(self, mask, target_height, target_width):
-        """
-        扩展遮罩到目标尺寸，保持白色区域不变，通过添加黑色区域实现
-        """
-        # 确保mask是2D的
+    def get_mask_bounds(self, mask):
+        """获取遮罩中非零区域的边界"""
         if len(mask.shape) > 2:
             mask = mask.squeeze()
         
-        current_height, current_width = mask.shape[-2:]
+        # 找到非零像素
+        coords = torch.nonzero(mask > 0.01)
         
-        # 如果已经是目标尺寸，直接返回
-        if current_height == target_height and current_width == target_width:
-            return mask
+        if coords.numel() == 0:
+            # 如果没有非零像素，返回整个遮罩作为边界
+            return 0, 0, mask.shape[1], mask.shape[0]
         
-        # 计算需要扩展的像素数
-        height_diff = target_height - current_height
-        width_diff = target_width - current_width
+        min_y, min_x = coords.min(dim=0)[0]
+        max_y, max_x = coords.max(dim=0)[0]
         
-        # 计算上下左右的padding
-        # 平均分配，如果是奇数则上边/左边多一个像素
-        pad_top = height_diff // 2
-        pad_bottom = height_diff - pad_top
-        pad_left = width_diff // 2
-        pad_right = width_diff - pad_left
-        
-        # 使用F.pad进行扩展，padding值为0（黑色）
-        # pad的顺序是 (pad_left, pad_right, pad_top, pad_bottom)
-        expanded_mask = F.pad(mask, (pad_left, pad_right, pad_top, pad_bottom), value=0.0)
-        
-        return expanded_mask
+        return int(min_x), int(min_y), int(max_x - min_x + 1), int(max_y - min_y + 1)
     
-    def align_mask_sizes(self, mask1, mask2):
+    def align_mask_with_position(self, mask2, base_height, base_width, base_bounds, mask2_bounds, alignment):
         """
-        主要处理函数：对齐两个遮罩的尺寸
+        根据对齐方式将mask2对齐到基准遮罩的位置
         """
-        # 确保输入是正确的维度
-        if len(mask1.shape) > 2:
-            mask1 = mask1.squeeze()
         if len(mask2.shape) > 2:
             mask2 = mask2.squeeze()
         
-        # 获取两个遮罩的尺寸
-        h1, w1 = mask1.shape[-2:]
-        h2, w2 = mask2.shape[-2:]
+        # 获取基准遮罩和mask2的内容边界
+        base_x, base_y, base_w, base_h = base_bounds
+        mask2_x, mask2_y, mask2_w, mask2_h = mask2_bounds
         
-        # 确定目标尺寸（取最大值）
-        target_height = max(h1, h2)
-        target_width = max(w1, w2)
+        # 创建输出画布（基准遮罩的尺寸）
+        output = torch.zeros((base_height, base_width), dtype=mask2.dtype, device=mask2.device)
         
-        print(f"遮罩1尺寸: {h1}x{w1}")
-        print(f"遮罩2尺寸: {h2}x{w2}")
-        print(f"目标尺寸: {target_height}x{target_width}")
+        # 获取mask2的原始尺寸
+        mask2_height, mask2_width = mask2.shape
         
-        # 扩展两个遮罩到目标尺寸
-        aligned_mask1 = self.expand_mask_to_size(mask1, target_height, target_width)
-        aligned_mask2 = self.expand_mask_to_size(mask2, target_height, target_width)
+        # 根据对齐方式计算mask2在输出画布中的位置
+        if alignment == "居中对齐":
+            # 将mask2的内容中心对齐到基准遮罩内容的中心
+            base_center_x = base_x + base_w // 2
+            base_center_y = base_y + base_h // 2
+            mask2_center_x = mask2_x + mask2_w // 2
+            mask2_center_y = mask2_y + mask2_h // 2
+            
+            # 计算mask2应该放置的位置
+            place_x = base_center_x - mask2_center_x
+            place_y = base_center_y - mask2_center_y
+            
+        elif alignment == "左对齐":
+            # 左边缘对齐，垂直居中
+            place_x = base_x - mask2_x
+            base_center_y = base_y + base_h // 2
+            mask2_center_y = mask2_y + mask2_h // 2
+            place_y = base_center_y - mask2_center_y
+            
+        elif alignment == "右对齐":
+            # 右边缘对齐，垂直居中
+            place_x = (base_x + base_w) - (mask2_x + mask2_w)
+            base_center_y = base_y + base_h // 2
+            mask2_center_y = mask2_y + mask2_h // 2
+            place_y = base_center_y - mask2_center_y
+            
+        elif alignment == "上对齐":
+            # 上边缘对齐，水平居中
+            base_center_x = base_x + base_w // 2
+            mask2_center_x = mask2_x + mask2_w // 2
+            place_x = base_center_x - mask2_center_x
+            place_y = base_y - mask2_y
+            
+        elif alignment == "下对齐":
+            # 下边缘对齐，水平居中
+            base_center_x = base_x + base_w // 2
+            mask2_center_x = mask2_x + mask2_w // 2
+            place_x = base_center_x - mask2_center_x
+            place_y = (base_y + base_h) - (mask2_y + mask2_h)
+            
+        elif alignment == "左上对齐":
+            # 左上角对齐
+            place_x = base_x - mask2_x
+            place_y = base_y - mask2_y
+            
+        elif alignment == "右上对齐":
+            # 右上角对齐
+            place_x = (base_x + base_w) - (mask2_x + mask2_w)
+            place_y = base_y - mask2_y
+            
+        elif alignment == "左下对齐":
+            # 左下角对齐
+            place_x = base_x - mask2_x
+            place_y = (base_y + base_h) - (mask2_y + mask2_h)
+            
+        elif alignment == "右下对齐":
+            # 右下角对齐
+            place_x = (base_x + base_w) - (mask2_x + mask2_w)
+            place_y = (base_y + base_h) - (mask2_y + mask2_h)
         
-        # 确保输出维度正确（ComfyUI期望的格式）
-        if len(aligned_mask1.shape) == 2:
-            aligned_mask1 = aligned_mask1.unsqueeze(0)
-        if len(aligned_mask2.shape) == 2:
+        # 计算有效的复制区域
+        src_start_x = max(0, -place_x)
+        src_start_y = max(0, -place_y)
+        src_end_x = min(mask2_width, base_width - place_x)
+        src_end_y = min(mask2_height, base_height - place_y)
+        
+        dst_start_x = max(0, place_x)
+        dst_start_y = max(0, place_y)
+        dst_end_x = dst_start_x + (src_end_x - src_start_x)
+        dst_end_y = dst_start_y + (src_end_y - src_start_y)
+        
+        # 复制mask2的内容到输出画布
+        if src_end_x > src_start_x and src_end_y > src_start_y:
+            output[dst_start_y:dst_end_y, dst_start_x:dst_end_x] = \
+                mask2[src_start_y:src_end_y, src_start_x:src_end_x]
+        
+        return output
+    
+    def align_mask_to_base(self, 基准遮罩, 遮罩2, 对齐方式):
+        """
+        主要处理函数：将遮罩2对齐到基准遮罩
+        """
+        # 确保输入是正确的维度
+        base_mask = 基准遮罩.clone()
+        mask2 = 遮罩2.clone()
+        
+        if len(base_mask.shape) > 2:
+            base_mask = base_mask.squeeze()
+        if len(mask2.shape) > 2:
+            mask2 = mask2.squeeze()
+        
+        # 获取尺寸信息
+        base_height, base_width = base_mask.shape
+        mask2_height, mask2_width = mask2.shape
+        
+        # 获取内容边界
+        base_bounds = self.get_mask_bounds(base_mask)
+        mask2_bounds = self.get_mask_bounds(mask2)
+        
+        print(f"基准遮罩尺寸: {base_height}x{base_width}")
+        print(f"基准遮罩内容边界: x={base_bounds[0]}, y={base_bounds[1]}, w={base_bounds[2]}, h={base_bounds[3]}")
+        print(f"遮罩2尺寸: {mask2_height}x{mask2_width}")
+        print(f"遮罩2内容边界: x={mask2_bounds[0]}, y={mask2_bounds[1]}, w={mask2_bounds[2]}, h={mask2_bounds[3]}")
+        print(f"对齐方式: {对齐方式}")
+        
+        # 执行对齐
+        aligned_mask2 = self.align_mask_with_position(
+            mask2, base_height, base_width, base_bounds, mask2_bounds, 对齐方式
+        )
+        
+        # 确保输出维度正确
+        if len(基准遮罩.shape) == 3:
             aligned_mask2 = aligned_mask2.unsqueeze(0)
+        elif len(基准遮罩.shape) == 2:
+            if len(aligned_mask2.shape) == 2:
+                基准遮罩 = 基准遮罩.unsqueeze(0)
+                aligned_mask2 = aligned_mask2.unsqueeze(0)
         
-        print(f"输出遮罩1尺寸: {aligned_mask1.shape}")
-        print(f"输出遮罩2尺寸: {aligned_mask2.shape}")
+        print(f"输出基准遮罩尺寸: {基准遮罩.shape}")
+        print(f"输出对齐遮罩尺寸: {aligned_mask2.shape}")
         
-        return (aligned_mask1, aligned_mask2)
+        return (基准遮罩, aligned_mask2)
 
 class MaskSizeAlignAdvanced:
     """
-    ComfyUI插件：高级遮罩尺寸对齐
-    可以指定对齐方式：居中、左对齐、右对齐、上对齐、下对齐等
+    ComfyUI插件：高级遮罩尺寸对齐（基准遮罩版）
+    支持多个遮罩同时对齐到基准遮罩
     """
     
     def __init__(self):
-        pass
+        self.basic_aligner = MaskSizeAlign()
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "mask1": ("MASK",),
-                "mask2": ("MASK",),
-                "horizontal_align": (["居中", "左对齐", "右对齐"], {"default": "居中"}),
-                "vertical_align": (["居中", "上对齐", "下对齐"], {"default": "居中"}),
+                "基准遮罩": ("MASK",),
+                "遮罩2": ("MASK",),
+                "对齐方式": (["居中对齐", "左对齐", "右对齐", "上对齐", "下对齐", 
+                           "左上对齐", "右上对齐", "左下对齐", "右下对齐"], 
+                          {"default": "居中对齐"}),
+            },
+            "optional": {
+                "遮罩3": ("MASK",),
+                "遮罩4": ("MASK",),
+                "遮罩5": ("MASK",),
+                "X轴偏移": ("INT", {"default": 0, "min": -1024, "max": 1024, "step": 1}),
+                "Y轴偏移": ("INT", {"default": 0, "min": -1024, "max": 1024, "step": 1}),
             }
         }
     
-    RETURN_TYPES = ("MASK", "MASK")
-    RETURN_NAMES = ("对齐遮罩1", "对齐遮罩2")
-    FUNCTION = "align_mask_sizes_advanced"
+    RETURN_TYPES = ("MASK", "MASK", "MASK", "MASK", "MASK")
+    RETURN_NAMES = ("基准遮罩", "对齐遮罩2", "对齐遮罩3", "对齐遮罩4", "合并遮罩")
+    FUNCTION = "align_multiple_masks"
     CATEGORY = "🐳Pond/mask"
     OUTPUT_NODE = False
     
-    def expand_mask_with_alignment(self, mask, target_height, target_width, h_align="居中", v_align="居中"):
-        """
-        根据对齐方式扩展遮罩到目标尺寸
-        """
-        if len(mask.shape) > 2:
-            mask = mask.squeeze()
-        
-        current_height, current_width = mask.shape[-2:]
-        
-        if current_height == target_height and current_width == target_width:
+    def apply_offset(self, mask, offset_x, offset_y):
+        """应用偏移到遮罩"""
+        if offset_x == 0 and offset_y == 0:
             return mask
         
-        height_diff = target_height - current_height
-        width_diff = target_width - current_width
+        h, w = mask.shape[-2:]
+        output = torch.zeros_like(mask)
         
-        # 根据水平对齐方式计算左右padding
-        if h_align == "居中":
-            pad_left = width_diff // 2
-            pad_right = width_diff - pad_left
-        elif h_align == "左对齐":
-            pad_left = 0
-            pad_right = width_diff
-        else:  # 右对齐
-            pad_left = width_diff
-            pad_right = 0
+        # 计算源和目标区域
+        src_x_start = max(0, -offset_x)
+        src_y_start = max(0, -offset_y)
+        src_x_end = min(w, w - offset_x)
+        src_y_end = min(h, h - offset_y)
         
-        # 根据垂直对齐方式计算上下padding
-        if v_align == "居中":
-            pad_top = height_diff // 2
-            pad_bottom = height_diff - pad_top
-        elif v_align == "上对齐":
-            pad_top = 0
-            pad_bottom = height_diff
-        else:  # 下对齐
-            pad_top = height_diff
-            pad_bottom = 0
+        dst_x_start = max(0, offset_x)
+        dst_y_start = max(0, offset_y)
+        dst_x_end = dst_x_start + (src_x_end - src_x_start)
+        dst_y_end = dst_y_start + (src_y_end - src_y_start)
         
-        # 应用padding
-        expanded_mask = F.pad(mask, (pad_left, pad_right, pad_top, pad_bottom), value=0.0)
+        if src_x_end > src_x_start and src_y_end > src_y_start:
+            output[..., dst_y_start:dst_y_end, dst_x_start:dst_x_end] = \
+                mask[..., src_y_start:src_y_end, src_x_start:src_x_end]
         
-        return expanded_mask
+        return output
     
-    def align_mask_sizes_advanced(self, mask1, mask2, horizontal_align, vertical_align):
+    def align_multiple_masks(self, 基准遮罩, 遮罩2, 对齐方式, 遮罩3=None, 遮罩4=None, 遮罩5=None, X轴偏移=0, Y轴偏移=0):
         """
-        高级对齐功能
+        对齐多个遮罩到基准遮罩
         """
-        if len(mask1.shape) > 2:
-            mask1 = mask1.squeeze()
-        if len(mask2.shape) > 2:
-            mask2 = mask2.squeeze()
+        # 收集所有需要对齐的遮罩
+        masks_to_align = [遮罩2]
+        if 遮罩3 is not None:
+            masks_to_align.append(遮罩3)
+        if 遮罩4 is not None:
+            masks_to_align.append(遮罩4)
+        if 遮罩5 is not None:
+            masks_to_align.append(遮罩5)
         
-        h1, w1 = mask1.shape[-2:]
-        h2, w2 = mask2.shape[-2:]
+        # 对齐所有遮罩
+        aligned_masks = []
+        for i, mask in enumerate(masks_to_align):
+            _, aligned = self.basic_aligner.align_mask_to_base(基准遮罩, mask, 对齐方式)
+            
+            # 应用偏移
+            if X轴偏移 != 0 or Y轴偏移 != 0:
+                aligned = self.apply_offset(aligned, X轴偏移, Y轴偏移)
+            
+            aligned_masks.append(aligned)
+            print(f"已对齐遮罩{i+2}")
         
-        target_height = max(h1, h2)
-        target_width = max(w1, w2)
+        # 创建合并遮罩（所有对齐后的遮罩的最大值）
+        merged = 基准遮罩.clone()
+        for aligned in aligned_masks:
+            merged = torch.maximum(merged, aligned)
         
-        print(f"遮罩1尺寸: {h1}x{w1}")
-        print(f"遮罩2尺寸: {h2}x{w2}")
-        print(f"目标尺寸: {target_height}x{target_width}")
-        print(f"对齐方式: 水平-{horizontal_align}, 垂直-{vertical_align}")
+        # 准备输出
+        output_masks = [基准遮罩] + aligned_masks
+        # 确保有5个输出
+        while len(output_masks) < 4:
+            output_masks.append(torch.zeros_like(基准遮罩))
+        output_masks.append(merged)
         
-        aligned_mask1 = self.expand_mask_with_alignment(
-            mask1, target_height, target_width, horizontal_align, vertical_align
-        )
-        aligned_mask2 = self.expand_mask_with_alignment(
-            mask2, target_height, target_width, horizontal_align, vertical_align
-        )
-        
-        if len(aligned_mask1.shape) == 2:
-            aligned_mask1 = aligned_mask1.unsqueeze(0)
-        if len(aligned_mask2.shape) == 2:
-            aligned_mask2 = aligned_mask2.unsqueeze(0)
-        
-        print(f"输出遮罩1尺寸: {aligned_mask1.shape}")
-        print(f"输出遮罩2尺寸: {aligned_mask2.shape}")
-        
-        return (aligned_mask1, aligned_mask2)
-    
+        return tuple(output_masks[:5])
 
 NODE_CLASS_MAPPINGS = {
     "MaskSizeAlign": MaskSizeAlign,
@@ -206,7 +290,6 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "MaskSizeAlign": "🐳遮罩对齐",
-    "MaskSizeAlignAdvanced": "🐳遮罩对齐(V2)"
+    "MaskSizeAlign": "🐳遮罩对齐扩展",
+    "MaskSizeAlignAdvanced": "🐳遮罩对齐扩展(V2)"
 }
-

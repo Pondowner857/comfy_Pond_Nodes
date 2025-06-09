@@ -19,6 +19,7 @@ from .nodes.MetadataUtils import NODE_CLASS_MAPPINGS as MetadataUtils_MAPPINGS, 
 from .nodes.RealisticNoise import NODE_CLASS_MAPPINGS as RealisticNoise_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as RealisticNoise_DISPLAY_NAME_MAPPINGS
 from .nodes.desaturate import NODE_CLASS_MAPPINGS as desaturate_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as desaturate_DISPLAY_NAME_MAPPINGS
 from .nodes.square_pixel import NODE_CLASS_MAPPINGS as square_pixel_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as square_pixel_DISPLAY_NAME_MAPPINGS
+from .nodes.ImageAlignByMask import NODE_CLASS_MAPPINGS as ImageAlignByMask_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as ImageAlignByMask_DISPLAY_NAME_MAPPINGS
 
 # 合并所有节点类映射
 NODE_CLASS_MAPPINGS = {
@@ -41,7 +42,8 @@ NODE_CLASS_MAPPINGS = {
     **MetadataUtils_MAPPINGS,
     **RealisticNoise_MAPPINGS,
     **desaturate_MAPPINGS,
-    **square_pixel_MAPPINGS
+    **square_pixel_MAPPINGS,
+    **ImageAlignByMask_MAPPINGS
 }
 
 # 合并所有节点显示名称映射
@@ -65,7 +67,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **MetadataUtils_DISPLAY_NAME_MAPPINGS,
     **RealisticNoise_DISPLAY_NAME_MAPPINGS,
     **desaturate_DISPLAY_NAME_MAPPINGS,
-    **square_pixel_DISPLAY_NAME_MAPPINGS
+    **square_pixel_DISPLAY_NAME_MAPPINGS,
+    **ImageAlignByMask_DISPLAY_NAME_MAPPINGS
 }
 
 # 导出
