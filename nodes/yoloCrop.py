@@ -13,11 +13,7 @@ except ImportError:
     YOLO = None
 
 class YoloBboxesCropNode:
-    """
-    集成YOLO检测和裁剪功能的节点
-    自动加载YOLO模型，检测并裁剪图像中的对象
-    """
-    
+
     def __init__(self):
         self.model = None
         self.current_model_name = None
@@ -71,6 +67,10 @@ class YoloBboxesCropNode:
                     "step": 10,
                     "display": "高度扩展"
                 }),
+                "sort_by": (["默认", "从左到右", "从右到左", "从上到下", "从下到上", "置信度降序", "置信度升序", "面积降序", "面积升序"], {
+                    "default": "从左到右",
+                    "display": "排序方式"
+                }),
                 "crop_mode": (["全部对象", "单个对象", "按类别"], {
                     "default": "全部对象",
                     "display": "裁剪模式"
@@ -81,19 +81,16 @@ class YoloBboxesCropNode:
                     "max": 100,
                     "step": 1,
                     "display": "对象索引"
-                }),
-                "output_mode": (["单独图像", "拼接图像"], {
-                    "default": "单独图像",
-                    "display": "输出模式"
                 })
             }
         }
 
     RETURN_TYPES = ("IMAGE", "MASK", "BBOXES", "STRING", "INT")
     RETURN_NAMES = ("裁剪图像", "遮罩", "边界框", "检测信息", "检测数量")
+    OUTPUT_IS_LIST = (True, False, False, False, False)  # 只有图像输出为列表
     FUNCTION = "detect_and_crop"
     CATEGORY = "🐳Pond/yolo"
-    DESCRIPTION = "使用YOLO模型检测图像中的对象并进行智能裁剪"
+    DESCRIPTION = "使用YOLO模型检测图像中的对象并进行智能裁剪，支持多种排序方式，输出单张遮罩"
 
     def load_model(self, model_name):
         """加载YOLO模型"""
@@ -297,7 +294,45 @@ class YoloBboxesCropNode:
         
         return filtered_boxes
 
-    def crop_single_object(self, image, detection, expand_width, expand_height):
+    def sort_detections(self, detections, sort_by):
+        """根据指定方式对检测结果排序"""
+        if not detections or sort_by == "默认":
+            return detections
+        
+        if sort_by == "从左到右":
+            # 按照边界框中心的x坐标排序
+            return sorted(detections, key=lambda d: (d['bbox'][0] + d['bbox'][2]) / 2)
+        elif sort_by == "从右到左":
+            # 按照边界框中心的x坐标降序排序
+            return sorted(detections, key=lambda d: (d['bbox'][0] + d['bbox'][2]) / 2, reverse=True)
+        elif sort_by == "从上到下":
+            # 按照边界框中心的y坐标排序
+            return sorted(detections, key=lambda d: (d['bbox'][1] + d['bbox'][3]) / 2)
+        elif sort_by == "从下到上":
+            # 按照边界框中心的y坐标降序排序
+            return sorted(detections, key=lambda d: (d['bbox'][1] + d['bbox'][3]) / 2, reverse=True)
+        elif sort_by == "置信度降序":
+            # 按置信度从高到低排序
+            return sorted(detections, key=lambda d: d['confidence'], reverse=True)
+        elif sort_by == "置信度升序":
+            # 按置信度从低到高排序
+            return sorted(detections, key=lambda d: d['confidence'])
+        elif sort_by == "面积降序":
+            # 按边界框面积从大到小排序
+            def get_area(d):
+                x1, y1, x2, y2 = d['bbox']
+                return (x2 - x1) * (y2 - y1)
+            return sorted(detections, key=get_area, reverse=True)
+        elif sort_by == "面积升序":
+            # 按边界框面积从小到大排序
+            def get_area(d):
+                x1, y1, x2, y2 = d['bbox']
+                return (x2 - x1) * (y2 - y1)
+            return sorted(detections, key=get_area)
+        
+        return detections
+
+    def crop_single_object(self, image, detection, expand_width, expand_height, original_height, original_width, scale_x=1.0, scale_y=1.0):
         """裁剪单个检测对象"""
         height, width = image.shape[:2]
         
@@ -313,18 +348,35 @@ class YoloBboxesCropNode:
         # 裁剪图像
         cropped = image[y1_expanded:y2_expanded, x1_expanded:x2_expanded]
         
-        # 创建遮罩
-        mask = np.zeros((height, width), dtype=np.float32)
-        mask[y1_expanded:y2_expanded, x1_expanded:x2_expanded] = 1.0
+        # 创建原图尺寸的遮罩，考虑可能的缩放
+        mask = np.zeros((original_height, original_width), dtype=np.float32)
+        
+        # 计算在原始尺寸上的坐标
+        mask_x1 = int(x1_expanded * scale_x)
+        mask_y1 = int(y1_expanded * scale_y)
+        mask_x2 = int(x2_expanded * scale_x)
+        mask_y2 = int(y2_expanded * scale_y)
+        
+        # 确保坐标在有效范围内
+        mask_x1 = max(0, min(mask_x1, original_width))
+        mask_y1 = max(0, min(mask_y1, original_height))
+        mask_x2 = max(mask_x1, min(mask_x2, original_width))
+        mask_y2 = max(mask_y1, min(mask_y2, original_height))
+        
+        if mask_x2 > mask_x1 and mask_y2 > mask_y1:
+            mask[mask_y1:mask_y2, mask_x1:mask_x2] = 1.0
         
         return cropped, mask, (x1_expanded, y1_expanded, x2_expanded, y2_expanded)
 
     def detect_and_crop(self, image, model_name, confidence, class_filter, 
-                       expand_width, expand_height, crop_mode, object_index, output_mode):
+                       expand_width, expand_height, sort_by, crop_mode, object_index):
         """执行检测和裁剪"""
         # 确保图像是4维的
         if len(image.shape) == 3:
             image = image.unsqueeze(0)
+        
+        # 保存原始图像尺寸（从tensor获取）
+        batch_size, tensor_height, tensor_width, channels = image.shape
         
         # 加载模型
         try:
@@ -332,9 +384,9 @@ class YoloBboxesCropNode:
         except Exception as e:
             print(f"模型加载失败: {e}")
             # 返回原图和空遮罩
-            empty_mask = torch.zeros((1, image.shape[1], image.shape[2], 1), dtype=torch.float32)
+            empty_mask = torch.zeros((1, tensor_height, tensor_width), dtype=torch.float32)
             empty_bboxes = torch.zeros((0, 4), dtype=torch.float32)
-            return (image, empty_mask, empty_bboxes, "模型加载失败", 0)
+            return ([image], empty_mask, empty_bboxes, "模型加载失败", 0)
         
         # 转换为PIL图像进行检测
         pil_img = self.tensor_to_pil(image)
@@ -346,16 +398,28 @@ class YoloBboxesCropNode:
         # 过滤检测结果
         detections = self.filter_detections(results, class_filter)
         
+        # 对检测结果进行排序
+        detections = self.sort_detections(detections, sort_by)
+        
         if not detections:
             print("未检测到任何对象")
-            empty_mask = torch.zeros((1, image.shape[1], image.shape[2], 1), dtype=torch.float32)
+            # 返回原图和原图大小的空遮罩
+            empty_mask = torch.zeros((1, tensor_height, tensor_width), dtype=torch.float32)
             empty_bboxes = torch.zeros((0, 4), dtype=torch.float32)
-            return (image, empty_mask, empty_bboxes, "未检测到对象", 0)
+            return ([image], empty_mask, empty_bboxes, "未检测到对象", 0)
         
-        print(f"检测到 {len(detections)} 个对象")
+        print(f"检测到 {len(detections)} 个对象，排序方式: {sort_by}")
         
         # 转换为numpy数组进行处理
         img_np = np.array(pil_img)
+        
+        # 使用tensor的原始尺寸作为遮罩尺寸
+        original_height, original_width = tensor_height, tensor_width
+        
+        # 计算缩放比例（处理PIL图像和原始tensor尺寸不一致的情况）
+        pil_height, pil_width = img_np.shape[:2]
+        scale_x = original_width / pil_width
+        scale_y = original_height / pil_height
         
         # 根据裁剪模式选择要处理的对象
         if crop_mode == "单个对象":
@@ -376,37 +440,42 @@ class YoloBboxesCropNode:
         
         # 裁剪选中的对象
         cropped_images = []
-        masks = []
         bboxes = []
         detection_info = []
         
+        # 创建一个与原图尺寸相同的合并遮罩
+        combined_mask = torch.zeros((original_height, original_width), dtype=torch.float32)
+        
         for i, det in enumerate(selected_detections):
-            cropped, mask, bbox = self.crop_single_object(img_np, det, expand_width, expand_height)
+            cropped, mask, bbox = self.crop_single_object(
+                img_np, det, expand_width, expand_height, 
+                original_height, original_width, scale_x, scale_y
+            )
             
             # 转换为tensor
             cropped_tensor = self.pil_to_tensor(Image.fromarray(cropped))
             mask_tensor = torch.from_numpy(mask).float()
             
+            # 为裁剪的图像添加批次维度
             cropped_images.append(cropped_tensor.unsqueeze(0))
-            masks.append(mask_tensor.unsqueeze(0).unsqueeze(-1))
+            
+            # 合并遮罩（使用最大值保留所有检测区域）
+            combined_mask = torch.maximum(combined_mask, mask_tensor)
+            
             bboxes.append(bbox)
             
-            # 记录检测信息
-            info = f"[{i}] {det['class_display']} (置信度: {det['confidence']:.2f})"
+            # 记录检测信息（显示排序后的索引和位置）
+            center_x = int((det['bbox'][0] + det['bbox'][2]) / 2)
+            center_y = int((det['bbox'][1] + det['bbox'][3]) / 2)
+            info = f"[{i}] {det['class_display']} (置信度: {det['confidence']:.2f}, 中心: x={center_x},y={center_y})"
             detection_info.append(info)
         
-        # 合并结果
-        if output_mode == "拼接图像" and len(cropped_images) > 1:
-            # 将所有裁剪图像拼接成批次
-            final_images = torch.cat(cropped_images, dim=0)
-        else:
-            # 单独输出每个图像
-            final_images = torch.cat(cropped_images, dim=0)
+        # 为合并遮罩添加批次维度
+        # MASK格式应该是 (batch, height, width)，不需要通道维度
+        final_mask = combined_mask.unsqueeze(0)
         
-        # 合并遮罩（使用最大值保留重叠区域）
-        final_mask = masks[0]
-        for mask in masks[1:]:
-            final_mask = torch.maximum(final_mask, mask)
+        # 确保遮罩数据类型和范围正确
+        final_mask = final_mask.clamp(0.0, 1.0)
         
         # 转换边界框为tensor
         final_bboxes = torch.tensor(bboxes, dtype=torch.float32)
@@ -415,7 +484,8 @@ class YoloBboxesCropNode:
         info_str = f"检测到 {len(detections)} 个对象，裁剪了 {len(selected_detections)} 个\n"
         info_str += "\n".join(detection_info)
         
-        return (final_images, final_mask, final_bboxes, info_str, len(selected_detections))
+        # 返回裁剪的图像列表和合并的遮罩
+        return (cropped_images, final_mask, final_bboxes, info_str, len(selected_detections))
 
 # 节点注册
 NODE_CLASS_MAPPINGS = {

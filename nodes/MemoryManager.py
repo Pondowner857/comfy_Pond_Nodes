@@ -32,7 +32,7 @@ class MemoryManager:
         self.timer_lock = threading.Lock()
         self.verbose = False  # 默认不输出详细信息
         self.last_free_time = 0  # 上次释放内存的时间
-        self.min_interval = 5  # 最小间隔时间（秒）
+        self.min_interval = 0.1  # 最小间隔时间（秒）- 改为0.1秒
         
     def start(self):
         """启动内存清理定时器"""
@@ -130,7 +130,7 @@ class MemoryManagerNode:
         return {
             "required": {
                 "enabled": ("BOOLEAN", {"default": False}),
-                "interval_seconds": ("INT", {"default": 60, "min": 5, "max": 3600, "step": 5}),
+                "interval_seconds": ("FLOAT", {"default": 60, "min": 0.1, "max": 60, "step": 0.1}),
                 "verbose": ("BOOLEAN", {"default": False}),
             },
         }
