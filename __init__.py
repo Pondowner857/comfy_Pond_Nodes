@@ -23,6 +23,10 @@ from .nodes.ImageAlignByMask import NODE_CLASS_MAPPINGS as ImageAlignByMask_MAPP
 from .nodes.auto_censor import NODE_CLASS_MAPPINGS as auto_censor_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as auto_censor_DISPLAY_NAME_MAPPINGS
 from .nodes.aged_damaged_effect import NODE_CLASS_MAPPINGS as aged_damaged_effect_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as aged_damaged_effect_DISPLAY_NAME_MAPPINGS
 from .nodes.math_tools import NODE_CLASS_MAPPINGS as math_tools_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as math_tools_DISPLAY_NAME_MAPPINGS
+from .nodes.VideoFrameExtractor import NODE_CLASS_MAPPINGS as VideoFrameExtractor_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as VideoFrameExtractor_DISPLAY_NAME_MAPPINGS
+from .nodes.BatchWatermark import NODE_CLASS_MAPPINGS as BatchWatermark_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as BatchWatermark_DISPLAY_NAME_MAPPINGS
+from .nodes.PoseSelector import NODE_CLASS_MAPPINGS as PoseSelector_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as PoseSelector_DISPLAY_NAME_MAPPINGS
+from .nodes.Clothing_Selector import NODE_CLASS_MAPPINGS as Clothing_Selector_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as Clothing_Selector_DISPLAY_NAME_MAPPINGS
 # 合并所有节点类映射
 NODE_CLASS_MAPPINGS = {
     **yoloCrop_MAPPINGS,
@@ -48,7 +52,11 @@ NODE_CLASS_MAPPINGS = {
     **ImageAlignByMask_MAPPINGS,
     **auto_censor_MAPPINGS,
     **aged_damaged_effect_MAPPINGS,
-    **math_tools_MAPPINGS
+    **math_tools_MAPPINGS,
+    **VideoFrameExtractor_MAPPINGS,
+    **BatchWatermark_MAPPINGS,
+    **PoseSelector_MAPPINGS,
+    **Clothing_Selector_MAPPINGS
 }
 
 # 合并所有节点显示名称映射
@@ -76,8 +84,13 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **ImageAlignByMask_DISPLAY_NAME_MAPPINGS,
     **auto_censor_DISPLAY_NAME_MAPPINGS,
     **aged_damaged_effect_DISPLAY_NAME_MAPPINGS,
-    **math_tools_DISPLAY_NAME_MAPPINGS
+    **math_tools_DISPLAY_NAME_MAPPINGS,
+    **VideoFrameExtractor_DISPLAY_NAME_MAPPINGS,
+    **BatchWatermark_DISPLAY_NAME_MAPPINGS,
+    **PoseSelector_DISPLAY_NAME_MAPPINGS,
+    **Clothing_Selector_DISPLAY_NAME_MAPPINGS
 }
 
 # 导出
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
+
