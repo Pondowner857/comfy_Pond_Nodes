@@ -1,6 +1,29 @@
 # 🐳 Pond Nodes for ComfyUI
 
+**Version 1.0.6** - Latest Update
+
 [English](#english) | [中文](#chinese)
+
+---
+
+## 🔄 Recent Updates (v1.0.6)
+
+### ✨ New Features
+- **🛠️ Math Tools**: Added comprehensive mathematical operation nodes including multi-number comparison, aspect ratio calculator, and basic math operations
+- **🎬 Video Processing**: New video frame extraction nodes with multiple extraction modes (index, percentage, time-based)
+- **🎭 Pose & Clothing Selection**: Rich tag selection system for human poses and clothing with batch generation capabilities
+- **💻 Hardware Monitoring**: Real-time system monitoring service for CPU, GPU, and memory usage
+- **🌐 Enhanced Web Interface**: Added JavaScript components for better user interaction
+
+### 🔧 Improvements
+- Updated dependency requirements with new optional packages
+- Enhanced error handling across all nodes
+- Improved documentation with detailed usage guides
+- Better memory management and performance optimization
+
+### ❌ Removed Features
+- Removed BatchWatermark node (deprecated)
+- Removed aged_damaged_effect node (deprecated)
 
 ---
 
@@ -51,6 +74,22 @@
 - 🧠 **内存管理**：
   - 内存管理器：优化节点处理过程中的内存使用，提高处理效率
 
+- 🛠️ **数学工具**：
+  - 多数值比较：支持多个数值的比较运算，包括最大值、最小值、中位数、平均值等
+  - 宽高比计算器：智能计算图像宽高比，支持多种约束模式和预设比例
+  - 数学运算：基础数学运算包括加减乘除、幂运算、三角函数等
+
+- 🎬 **视频处理**：
+  - 视频帧提取器：从视频中提取指定帧，支持索引、百分比、时间等提取模式
+  - 高级帧提取：支持帧范围提取和批量处理
+
+- 🎭 **姿势与服装**：
+  - 姿势选择器：丰富的人体姿势标签选择，包含多种姿势类别和批量生成
+  - 服装选择器：全面的服装标签系统，支持多种服装类型和穿搭建议
+
+- 💻 **硬件监控**：
+  - 硬件监控器：实时监控CPU、GPU、内存使用情况，优化工作流性能
+
 ### 📂 节点文件与功能对应
 
 本插件包含以下Python模块文件，每个文件实现了特定的功能节点：
@@ -79,6 +118,11 @@
 | **TextCleaner.py** | 🐳文本清理器 | 清理和优化提示文本，支持标签过滤和句子过滤 |
 | **MetadataUtils.py** | 🐳删除元数据, 🐳加载图像(清除元数据), 🐳查看元数据, 🐳批量删除元数据 | 图像元数据处理工具集 |
 | **MemoryManager.py** | 🐳内存管理器 | 优化节点处理过程中的内存使用 |
+| **math_tools.py** | 🐳多数值比较, 🐳宽高比计算, 🐳数学运算 | 数学工具集，支持多种数学运算和数值处理 |
+| **VideoFrameExtractor.py** | 🐳视频帧提取器, 🐳高级视频帧提取器, 🐳视频帧范围提取器 | 视频帧提取和处理工具 |
+| **PoseSelector.py** | 🐳姿势选择器, 🐳简单姿势选择器, 🐳批量姿势生成器 | 人体姿势标签选择和批量生成工具 |
+| **Clothing_Selector.py** | 🐳服装选择器, 🐳简单服装选择器, 🐳批量服装生成器, 🐳服装穿搭建议 | 服装标签选择和穿搭建议工具 |
+| **hardware_monitor.py** | 硬件监控服务 | 实时监控系统硬件状态，为其他节点提供性能参考 |
 
 ### 📋 依赖要求
 
@@ -98,15 +142,9 @@
 - realesrgan >= 0.3.0 (RealESRGAN超分辨率 - 有回退方案)
 - torchvision >= 0.15.0 (YOLO拼接变换函数)
 - requests >= 2.25.0 (内存管理器网络功能)
+- psutil >= 5.8.0 (硬件监控功能)
+- pynvml >= 8.0.4 (NVIDIA GPU监控 - 硬件监控功能)
 
-### 💾 安装方法
-
-#### 方法1：使用ComfyUI Manager (推荐)
-
-1. 在ComfyUI中安装ComfyUI Manager
-2. 在Custom Nodes选项卡中搜索"Pond Nodes"并安装
-
-#### 方法2：手动安装
 
 1. 克隆或下载此仓库
 2. 将文件夹放入ComfyUI的`custom_nodes`目录
@@ -141,6 +179,9 @@
 - **内存使用**：对于大图像或批处理，考虑使用内存管理器节点来优化性能。
 
 - **错误处理**：大多数节点包含优雅的错误处理，如果缺少依赖项或找不到模型，会提供信息性消息。
+
+- **冲突**：本节点与comfyui_HiDream-Sampler有依赖冲突，如果发现终端控制台在进行不断刷屏，请检查你是否安装了这个插件！！！
+
 
 ---
 
@@ -191,6 +232,22 @@ This plugin collection includes various practical nodes to help you with:
 - 🧠 **Memory Management**:
   - Memory Manager: Optimize memory usage during node processing for improved efficiency
 
+- 🛠️ **Math Tools**:
+  - Multi Number Compare: Support comparison operations on multiple values including max, min, median, average, etc.
+  - Aspect Ratio Calculator: Smart aspect ratio calculation with multiple constraint modes and preset ratios
+  - Math Operations: Basic mathematical operations including arithmetic, power, trigonometric functions, etc.
+
+- 🎬 **Video Processing**:
+  - Video Frame Extractor: Extract specific frames from videos with index, percentage, time-based modes
+  - Advanced Frame Extraction: Support frame range extraction and batch processing
+
+- 🎭 **Pose & Clothing**:
+  - Pose Selector: Rich human pose tag selection with multiple pose categories and batch generation
+  - Clothing Selector: Comprehensive clothing tag system with various clothing types and outfit suggestions
+
+- 💻 **Hardware Monitoring**:
+  - Hardware Monitor: Real-time monitoring of CPU, GPU, memory usage for workflow performance optimization
+
 ### 📂 Node Files and Function Mapping
 
 This plugin contains the following Python module files, each implementing specific function nodes:
@@ -219,6 +276,11 @@ This plugin contains the following Python module files, each implementing specif
 | **TextCleaner.py** | 🐳Text Cleaner | Clean and optimize prompt text with tag filtering and sentence filtering |
 | **MetadataUtils.py** | 🐳Remove Metadata, 🐳Load Image (Clear Metadata), 🐳View Metadata, 🐳Batch Remove Metadata | Image metadata processing toolset |
 | **MemoryManager.py** | 🐳Memory Manager | Optimize memory usage during node processing |
+| **math_tools.py** | 🐳Multi Number Compare, 🐳Aspect Ratio Calculator, 🐳Math Operations | Mathematical tools supporting various operations and numerical processing |
+| **VideoFrameExtractor.py** | 🐳Video Frame Extractor, 🐳Advanced Video Frame Extractor, 🐳Video Frame Range Extractor | Video frame extraction and processing tools |
+| **PoseSelector.py** | 🐳Pose Selector, 🐳Simple Pose Selector, 🐳Batch Pose Generator | Human pose tag selection and batch generation tools |
+| **Clothing_Selector.py** | 🐳Clothing Selector, 🐳Simple Clothing Selector, 🐳Batch Clothing Generator, 🐳Clothing Outfit Suggestion | Clothing tag selection and outfit suggestion tools |
+| **hardware_monitor.py** | Hardware Monitor Service | Real-time system hardware monitoring service for performance reference |
 
 ### 📋 Dependencies
 
@@ -238,15 +300,9 @@ This plugin contains the following Python module files, each implementing specif
 - realesrgan >= 0.3.0 (for RealESRGAN upscaling - fallback available)
 - torchvision >= 0.15.0 (for YOLO paste transform functions)
 - requests >= 2.25.0 (for memory manager network functionality)
+- psutil >= 5.8.0 (for hardware monitoring functionality)
+- pynvml >= 8.0.4 (for NVIDIA GPU monitoring - hardware monitoring functionality)
 
-### 💾 Installation
-
-#### Method 1: Using ComfyUI Manager (Recommended)
-
-1. Install ComfyUI Manager in ComfyUI
-2. Search for "Pond Nodes" in the Custom Nodes tab and install
-
-#### Method 2: Manual Installation
 
 1. Clone or download this repository
 2. Place the folder in ComfyUI's `custom_nodes` directory
@@ -382,6 +438,73 @@ This plugin contains the following Python module files, each implementing specif
    - Optimize memory usage during node processing
    - Monitor and manage memory allocation for improved performance
 
+#### Math Tools Nodes
+
+1. **Multi Number Compare**:
+   - Compare multiple numeric values (up to 10 inputs)
+   - Support various comparison modes: max, min, median, average, sum, sorted, range
+   - Return primary result, secondary result, and detailed information
+
+2. **Aspect Ratio Calculator**:
+   - Calculate optimal dimensions based on aspect ratios
+   - Support preset ratios (1:1, 4:3, 16:9, etc.) and custom ratios
+   - Multiple constraint modes: keep ratio, max total, min total
+   - Automatic rounding to specified multiples (e.g., 8, 16, 32)
+
+3. **Math Operations**:
+   - Perform basic arithmetic operations: add, subtract, multiply, divide
+   - Advanced operations: power, modulo, logarithm, trigonometric functions
+   - Support up to 3 input values for complex calculations
+
+#### Video Processing Nodes
+
+1. **Video Frame Extractor**:
+   - Extract specific frames from video sequences
+   - Support frame index-based extraction
+   - Handle frame boundary checking automatically
+
+2. **Advanced Video Frame Extractor**:
+   - Multiple extraction modes: index, percentage, time-based
+   - FPS-aware time extraction
+   - Return both extracted frame and frame index
+
+3. **Video Frame Range Extractor**:
+   - Extract frame ranges with customizable step intervals
+   - Efficient batch frame processing
+   - Support start frame, end frame, and step configuration
+
+#### Pose & Clothing Selection Nodes
+
+1. **Pose Selector**:
+   - Rich collection of human pose tags organized by categories
+   - Multiple selection boxes per category for flexible combinations
+   - Support both Chinese and English output formats
+   - Custom tag input support
+
+2. **Simple Pose Selector**:
+   - Number-based selection system for easier use
+   - Quick preset combinations for common poses
+   - Range selection support (e.g., 1-5, 8, 10)
+
+3. **Batch Pose Generator**:
+   - Generate multiple pose combinations automatically
+   - Weighted category selection for balanced results
+   - Customizable batch count and tags per batch
+
+4. **Clothing Selector Series**:
+   - Comprehensive clothing tag system covering all garment types
+   - Categories: dresses, tops, bottoms, swimwear, sportswear, underwear, outerwear, special
+   - Similar functionality to pose selectors with batch generation
+   - Outfit suggestion system with style-based recommendations
+
+#### Hardware Monitoring
+
+1. **Hardware Monitor Service**:
+   - Real-time CPU, GPU, and memory monitoring
+   - NVIDIA GPU specific monitoring (temperature, utilization, VRAM)
+   - WebSocket-based real-time updates to ComfyUI interface
+   - Automatic fallback when hardware monitoring libraries unavailable
+
 ### 🛠️ Troubleshooting
 
 #### Common Issues
@@ -406,6 +529,18 @@ This project is provided as-is for ComfyUI users. Please respect the licenses of
 
 Feel free to submit issues and pull requests to improve this node collection. All contributions are welcome!
 
+### 📞 Support
+
+If you encounter any issues or have suggestions:
+- Open an issue on GitHub
+- Check the troubleshooting section above
+- Ensure all dependencies are properly installed
+- Verify model files are in correct directories
+
+### 🏷️ Tags
+
+ComfyUI, Custom Nodes, Image Processing, Mask Operations, YOLO, Object Detection, Video Processing, Math Tools, Pose Selection, Clothing Tags, Hardware Monitoring, AI Tools
+
 ---
 
-*Note: This documentation reflects the current state after translation of all Chinese text to English. All node names, parameters, and descriptions are now in English for international users.* 
+*Note: This documentation reflects the current state after adding new features in version 1.0.6. All node names, parameters, and descriptions are available in both Chinese and English for international users.* 

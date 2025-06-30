@@ -5,74 +5,74 @@ class Pond_c_e:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "脸": ("BOOLEAN", {"default": False}),
-                "手": ("BOOLEAN", {"default": False}),
-                "头发": ("BOOLEAN", {"default": False}),
-                "眼睛": ("BOOLEAN", {"default": False}),
-                "嘴巴": ("BOOLEAN", {"default": False}),
-                "鼻子": ("BOOLEAN", {"default": False}),
-                "耳朵": ("BOOLEAN", {"default": False}),
-                "身体": ("BOOLEAN", {"default": False}),
-                "左手臂": ("BOOLEAN", {"default": False}),
-                "右手臂": ("BOOLEAN", {"default": False}),
-                "左腿": ("BOOLEAN", {"default": False}),
-                "右腿": ("BOOLEAN", {"default": False}),
-                "上衣": ("BOOLEAN", {"default": False}),
-                "外套": ("BOOLEAN", {"default": False}),
-                "T恤": ("BOOLEAN", {"default": False}),
-                "衬衫": ("BOOLEAN", {"default": False}),
-                "裤子": ("BOOLEAN", {"default": False}),
-                "鞋子": ("BOOLEAN", {"default": False}),
-                "裙子": ("BOOLEAN", {"default": False}),
-                "连衣裙": ("BOOLEAN", {"default": False}),
-                "领带": ("BOOLEAN", {"default": False}),
-                "腰带": ("BOOLEAN", {"default": False}),
-                "背包": ("BOOLEAN", {"default": False}),
-                "围巾": ("BOOLEAN", {"default": False}),
-                "眼镜": ("BOOLEAN", {"default": False}), 
+                "face": ("BOOLEAN", {"default": False}),
+                "hand": ("BOOLEAN", {"default": False}),
+                "hair": ("BOOLEAN", {"default": False}),
+                "eyes": ("BOOLEAN", {"default": False}),
+                "mouth": ("BOOLEAN", {"default": False}),
+                "nose": ("BOOLEAN", {"default": False}),
+                "ears": ("BOOLEAN", {"default": False}),
+                "body": ("BOOLEAN", {"default": False}),
+                "left_arm": ("BOOLEAN", {"default": False}),
+                "right_arm": ("BOOLEAN", {"default": False}),
+                "left_leg": ("BOOLEAN", {"default": False}),
+                "right_leg": ("BOOLEAN", {"default": False}),
+                "top": ("BOOLEAN", {"default": False}),
+                "jacket": ("BOOLEAN", {"default": False}),
+                "t_shirt": ("BOOLEAN", {"default": False}),
+                "shirt": ("BOOLEAN", {"default": False}),
+                "pants": ("BOOLEAN", {"default": False}),
+                "shoes": ("BOOLEAN", {"default": False}),
+                "skirt": ("BOOLEAN", {"default": False}),
+                "dress": ("BOOLEAN", {"default": False}),
+                "tie": ("BOOLEAN", {"default": False}),
+                "belt": ("BOOLEAN", {"default": False}),
+                "backpack": ("BOOLEAN", {"default": False}),
+                "scarf": ("BOOLEAN", {"default": False}),
+                "glasses": ("BOOLEAN", {"default": False}), 
             },
         }
 
     RETURN_TYPES = ("STRING",)
     FUNCTION = "process"
-    CATEGORY = "🐳Pond/选择器"
+    CATEGORY = "🐳Pond/selector"
 
     def process(self, **kwargs):
-        # 获取所有被选中的部位的英文名称
+        # Get English names of all selected parts
         active_parts = []
         body_parts_map = {
-            "脸": "face",
-            "手": "hand",
-            "头发": "hair",
-            "眼睛": "eyes",
-            "嘴巴": "mouth",
-            "鼻子": "nose",
-            "耳朵": "ears",
-            "身体": "body",
-            "左手臂": "left arm",
-            "右手臂": "right arm",
-            "左腿": "left leg",
-            "右腿": "right leg",
-            "上衣": "top",
-            "外套": "jacket",
-            "T恤": "T-shirt",
-            "衬衫": "shirt",
-            "裤子": "pants",
-            "鞋子": "shoes",
-            "裙子": "skirt",
-            "连衣裙": "dress",
-            "领带": "tie",
-            "腰带": "belt",
-            "背包": "backpack",
-            "围巾": "scarf",
-            "眼镜": "glasses"
+            "face": "face",
+            "hand": "hand",
+            "hair": "hair",
+            "eyes": "eyes",
+            "mouth": "mouth",
+            "nose": "nose",
+            "ears": "ears",
+            "body": "body",
+            "left_arm": "left arm",
+            "right_arm": "right arm",
+            "left_leg": "left leg",
+            "right_leg": "right leg",
+            "top": "top",
+            "jacket": "jacket",
+            "t_shirt": "T-shirt",
+            "shirt": "shirt",
+            "pants": "pants",
+            "shoes": "shoes",
+            "skirt": "skirt",
+            "dress": "dress",
+            "tie": "tie",
+            "belt": "belt",
+            "backpack": "backpack",
+            "scarf": "scarf",
+            "glasses": "glasses"
         }
 
         for part, value in kwargs.items():
-            if value:
+            if value and part in body_parts_map:
                 active_parts.append(body_parts_map[part])
 
-        # 返回逗号分隔的英文部位名称
+        # Return comma-separated English part names
         return (", ".join(active_parts),)
 
 NODE_CLASS_MAPPINGS = {
@@ -80,5 +80,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "Pond_c_e": "🐳身体部位选择器"
+    "Pond_c_e": "🐳Body Part Selector"
 }

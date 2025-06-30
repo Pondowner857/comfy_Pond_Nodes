@@ -5,69 +5,69 @@ import comfy.utils
 
 class PixelizeNode:
     """
-    将普通图像转换为像素风格
+    Convert normal images to pixel art style
     """
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "图像": ("IMAGE",),
-                "像素大小": ("INT", {
+                "image": ("IMAGE",),
+                "pixel_size": ("INT", {
                     "default": 8,
                     "min": 1,
                     "max": 64,
                     "step": 1,
                     "display": "number"
                 }),
-                "缩放模式": (["保持原始尺寸", "缩放到像素网格"],),
-                "抗锯齿": ("BOOLEAN", {"default": False}),
+                "scale_mode": (["keep_original_size", "scale_to_pixel_grid"],),
+                "anti_aliasing": ("BOOLEAN", {"default": False}),
             },
         }
     
     RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("图像",)
+    RETURN_NAMES = ("image",)
     FUNCTION = "pixelize"
-    CATEGORY = "🐳Pond/图像"
+    CATEGORY = "🐳Pond/image"
     
-    def pixelize(self, 图像, 像素大小, 缩放模式, 抗锯齿):
-        batch_size, height, width, channels = 图像.shape
+    def pixelize(self, image, pixel_size, scale_mode, anti_aliasing):
+        batch_size, height, width, channels = image.shape
         processed_images = []
         
         for i in range(batch_size):
-            # 转换为PIL图像
-            img_tensor = 图像[i]
+            # Convert to PIL image
+            img_tensor = image[i]
             img_np = (img_tensor.cpu().numpy() * 255).astype(np.uint8)
             img_pil = Image.fromarray(img_np, mode='RGB' if channels == 3 else 'RGBA')
             
-            if 缩放模式 == "保持原始尺寸":
-                # 保持原始尺寸，只是像素化
-                # 计算像素化后的尺寸
-                pixel_width = width // 像素大小
-                pixel_height = height // 像素大小
+            if scale_mode == "keep_original_size":
+                # Keep original size, just pixelize
+                # Calculate pixelized dimensions
+                pixel_width = width // pixel_size
+                pixel_height = height // pixel_size
                 
-                # 缩小到像素尺寸
-                downsample_method = Image.LANCZOS if 抗锯齿 else Image.NEAREST
+                # Downscale to pixel size
+                downsample_method = Image.LANCZOS if anti_aliasing else Image.NEAREST
                 img_small = img_pil.resize((pixel_width, pixel_height), downsample_method)
                 
-                # 放大回原始尺寸
+                # Upscale back to original size
                 img_pixelated = img_small.resize((width, height), Image.NEAREST)
             else:
-                # 缩放到像素网格（确保每个像素块都是完整的）
-                pixel_width = width // 像素大小
-                pixel_height = height // 像素大小
-                new_width = pixel_width * 像素大小
-                new_height = pixel_height * 像素大小
+                # Scale to pixel grid (ensure each pixel block is complete)
+                pixel_width = width // pixel_size
+                pixel_height = height // pixel_size
+                new_width = pixel_width * pixel_size
+                new_height = pixel_height * pixel_size
                 
-                # 先调整到网格尺寸
+                # First adjust to grid size
                 img_resized = img_pil.resize((new_width, new_height), Image.LANCZOS)
                 
-                # 像素化
-                downsample_method = Image.LANCZOS if 抗锯齿 else Image.NEAREST
+                # Pixelize
+                downsample_method = Image.LANCZOS if anti_aliasing else Image.NEAREST
                 img_small = img_resized.resize((pixel_width, pixel_height), downsample_method)
                 img_pixelated = img_small.resize((new_width, new_height), Image.NEAREST)
             
-            # 转换回tensor
+            # Convert back to tensor
             img_np = np.array(img_pixelated).astype(np.float32) / 255.0
             img_tensor = torch.from_numpy(img_np)
             processed_images.append(img_tensor)
@@ -77,142 +77,142 @@ class PixelizeNode:
 
 class SquarePixelCorrectionNode:
     """
-    将像素图像中的非正方形像素校正为1:1的正方形
+    Correct non-square pixels in pixel art to 1:1 square pixels
     """
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "图像": ("IMAGE",),
-                "检测模式": (["自动检测", "手动设置"],),
-                "像素宽度": ("INT", {
+                "image": ("IMAGE",),
+                "detection_mode": (["auto_detect", "manual_set"],),
+                "pixel_width": ("INT", {
                     "default": 1,
                     "min": 1,
                     "max": 64,
                     "step": 1,
                     "display": "number"
                 }),
-                "像素高度": ("INT", {
+                "pixel_height": ("INT", {
                     "default": 2,
                     "min": 1,
                     "max": 64,
                     "step": 1,
                     "display": "number"
                 }),
-                "输出模式": (["拉伸图像", "添加边距", "裁剪图像"],),
-                "对齐方式": (["居中", "左上", "右上", "左下", "右下"],),
+                "output_mode": (["stretch_image", "add_padding", "crop_image"],),
+                "alignment": (["center", "top_left", "top_right", "bottom_left", "bottom_right"],),
             },
         }
     
     RETURN_TYPES = ("IMAGE", "INT", "INT")
-    RETURN_NAMES = ("图像", "像素宽度", "像素高度")
+    RETURN_NAMES = ("image", "pixel_width", "pixel_height")
     FUNCTION = "correct_pixels"
-    CATEGORY = "🐳Pond/图像"
+    CATEGORY = "🐳Pond/image"
     
-    def correct_pixels(self, 图像, 检测模式, 像素宽度, 像素高度, 输出模式, 对齐方式):
-        batch_size, height, width, channels = 图像.shape
+    def correct_pixels(self, image, detection_mode, pixel_width, pixel_height, output_mode, alignment):
+        batch_size, height, width, channels = image.shape
         processed_images = []
         
         for i in range(batch_size):
-            # 转换为PIL图像
-            img_tensor = 图像[i]
+            # Convert to PIL image
+            img_tensor = image[i]
             img_np = (img_tensor.cpu().numpy() * 255).astype(np.uint8)
             img_pil = Image.fromarray(img_np, mode='RGB' if channels == 3 else 'RGBA')
             
-            # 自动检测像素大小
-            if 检测模式 == "自动检测":
+            # Auto detect pixel size
+            if detection_mode == "auto_detect":
                 detected_width, detected_height = self._detect_pixel_size(img_pil)
                 if detected_width > 0 and detected_height > 0:
-                    像素宽度 = detected_width
-                    像素高度 = detected_height
+                    pixel_width = detected_width
+                    pixel_height = detected_height
             
-            # 计算校正后的尺寸
-            if 输出模式 == "拉伸图像":
-                # 计算需要的拉伸比例
-                if 像素宽度 > 像素高度:
-                    # 需要垂直拉伸
-                    scale_factor = 像素宽度 / 像素高度
+            # Calculate corrected dimensions
+            if output_mode == "stretch_image":
+                # Calculate required stretch ratio
+                if pixel_width > pixel_height:
+                    # Need vertical stretch
+                    scale_factor = pixel_width / pixel_height
                     new_width = width
                     new_height = int(height * scale_factor)
                 else:
-                    # 需要水平拉伸
-                    scale_factor = 像素高度 / 像素宽度
+                    # Need horizontal stretch
+                    scale_factor = pixel_height / pixel_width
                     new_width = int(width * scale_factor)
                     new_height = height
                 
                 img_corrected = img_pil.resize((new_width, new_height), Image.NEAREST)
                 
-            elif 输出模式 == "添加边距":
-                # 计算需要添加的边距
-                target_ratio = 1.0  # 目标是1:1
-                current_ratio = 像素宽度 / 像素高度
+            elif output_mode == "add_padding":
+                # Calculate padding needed
+                target_ratio = 1.0  # Target is 1:1
+                current_ratio = pixel_width / pixel_height
                 
                 if current_ratio > target_ratio:
-                    # 像素太宽，需要添加上下边距
+                    # Pixels too wide, need top/bottom padding
                     new_height = int(height * current_ratio)
                     new_width = width
                     
-                    # 创建新图像
+                    # Create new image
                     img_corrected = Image.new(img_pil.mode, (new_width, new_height), (0, 0, 0))
                     
-                    # 根据对齐方式放置原图
-                    y_offset = self._calculate_offset(new_height - height, 对齐方式, 'vertical')
+                    # Place original image based on alignment
+                    y_offset = self._calculate_offset(new_height - height, alignment, 'vertical')
                     img_corrected.paste(img_pil, (0, y_offset))
                 else:
-                    # 像素太高，需要添加左右边距
+                    # Pixels too tall, need left/right padding
                     new_width = int(width / current_ratio)
                     new_height = height
                     
-                    # 创建新图像
+                    # Create new image
                     img_corrected = Image.new(img_pil.mode, (new_width, new_height), (0, 0, 0))
                     
-                    # 根据对齐方式放置原图
-                    x_offset = self._calculate_offset(new_width - width, 对齐方式, 'horizontal')
+                    # Place original image based on alignment
+                    x_offset = self._calculate_offset(new_width - width, alignment, 'horizontal')
                     img_corrected.paste(img_pil, (x_offset, 0))
                     
-            else:  # 裁剪图像
-                # 计算裁剪尺寸
-                if 像素宽度 > 像素高度:
-                    # 需要裁剪宽度
-                    crop_ratio = 像素高度 / 像素宽度
+            else:  # crop_image
+                # Calculate crop dimensions
+                if pixel_width > pixel_height:
+                    # Need to crop width
+                    crop_ratio = pixel_height / pixel_width
                     new_width = int(width * crop_ratio)
                     new_height = height
                     
-                    # 根据对齐方式计算裁剪位置
-                    x_offset = self._calculate_offset(width - new_width, 对齐方式, 'horizontal')
+                    # Calculate crop position based on alignment
+                    x_offset = self._calculate_offset(width - new_width, alignment, 'horizontal')
                     img_corrected = img_pil.crop((x_offset, 0, x_offset + new_width, height))
                 else:
-                    # 需要裁剪高度
-                    crop_ratio = 像素宽度 / 像素高度
+                    # Need to crop height
+                    crop_ratio = pixel_width / pixel_height
                     new_width = width
                     new_height = int(height * crop_ratio)
                     
-                    # 根据对齐方式计算裁剪位置
-                    y_offset = self._calculate_offset(height - new_height, 对齐方式, 'vertical')
+                    # Calculate crop position based on alignment
+                    y_offset = self._calculate_offset(height - new_height, alignment, 'vertical')
                     img_corrected = img_pil.crop((0, y_offset, width, y_offset + new_height))
             
-            # 转换回tensor
+            # Convert back to tensor
             img_np = np.array(img_corrected).astype(np.float32) / 255.0
             img_tensor = torch.from_numpy(img_np)
             processed_images.append(img_tensor)
         
         output = torch.stack(processed_images)
-        return (output, 像素宽度, 像素高度)
+        return (output, pixel_width, pixel_height)
     
     def _detect_pixel_size(self, img):
-        """自动检测像素大小"""
-        # 将图像转换为numpy数组
+        """Auto detect pixel size"""
+        # Convert image to numpy array
         img_array = np.array(img)
         height, width = img_array.shape[:2]
         
-        # 检测水平方向的像素大小
+        # Detect horizontal pixel size
         pixel_width = 1
         for w in range(1, min(width // 2, 64)):
-            # 检查是否所有像素都是w的倍数宽度
+            # Check if all pixels are multiple of w width
             is_valid = True
             for x in range(0, width - w, w):
-                # 检查像素块是否一致
+                # Check if pixel block is uniform
                 block = img_array[:, x:x+w]
                 if not self._is_uniform_block(block):
                     is_valid = False
@@ -221,13 +221,13 @@ class SquarePixelCorrectionNode:
                 pixel_width = w
                 break
         
-        # 检测垂直方向的像素大小
+        # Detect vertical pixel size
         pixel_height = 1
         for h in range(1, min(height // 2, 64)):
-            # 检查是否所有像素都是h的倍数高度
+            # Check if all pixels are multiple of h height
             is_valid = True
             for y in range(0, height - h, h):
-                # 检查像素块是否一致
+                # Check if pixel block is uniform
                 block = img_array[y:y+h, :]
                 if not self._is_uniform_block(block):
                     is_valid = False
@@ -239,149 +239,149 @@ class SquarePixelCorrectionNode:
         return pixel_width, pixel_height
     
     def _is_uniform_block(self, block):
-        """检查像素块是否均匀"""
+        """Check if pixel block is uniform"""
         if block.size == 0:
             return False
         
-        # 获取第一个像素的颜色
+        # Get first pixel color
         first_pixel = block.flat[0:block.shape[-1]]
         
-        # 检查所有像素是否相同
+        # Check if all pixels are the same
         return np.all(block == first_pixel)
     
     def _calculate_offset(self, total_offset, alignment, direction):
-        """根据对齐方式计算偏移量"""
-        if alignment == "居中":
+        """Calculate offset based on alignment"""
+        if alignment == "center":
             return total_offset // 2
-        elif alignment == "左上":
+        elif alignment == "top_left":
             return 0
-        elif alignment == "右上":
+        elif alignment == "top_right":
             return total_offset if direction == 'horizontal' else 0
-        elif alignment == "左下":
+        elif alignment == "bottom_left":
             return 0 if direction == 'horizontal' else total_offset
-        elif alignment == "右下":
+        elif alignment == "bottom_right":
             return total_offset
         return 0
 
 class PartialPixelizeNode:
     """
-    局部像素化节点，通过遮罩控制像素化区域
+    Partial pixelization node, control pixelized areas through mask
     """
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "图像": ("IMAGE",),
-                "遮罩": ("MASK",),
-                "像素大小": ("INT", {
+                "image": ("IMAGE",),
+                "mask": ("MASK",),
+                "pixel_size": ("INT", {
                     "default": 8,
                     "min": 1,
                     "max": 64,
                     "step": 1,
                     "display": "number"
                 }),
-                "混合强度": ("FLOAT", {
+                "blend_strength": ("FLOAT", {
                     "default": 1.0,
                     "min": 0.0,
                     "max": 1.0,
                     "step": 0.01,
                     "display": "slider"
                 }),
-                "羽化半径": ("INT", {
+                "feather_radius": ("INT", {
                     "default": 0,
                     "min": 0,
                     "max": 100,
                     "step": 1,
                     "display": "number"
                 }),
-                "混合模式": (["正常", "叠加", "柔光", "强光"],),
-                "反转遮罩": ("BOOLEAN", {"default": False}),
-                "保持颜色": ("BOOLEAN", {"default": False}),
+                "blend_mode": (["normal", "overlay", "soft_light", "hard_light"],),
+                "invert_mask": ("BOOLEAN", {"default": False}),
+                "preserve_colors": ("BOOLEAN", {"default": False}),
             },
         }
     
     RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("图像",)
+    RETURN_NAMES = ("image",)
     FUNCTION = "partial_pixelize"
-    CATEGORY = "🐳Pond/图像"
+    CATEGORY = "🐳Pond/image"
     
-    def partial_pixelize(self, 图像, 遮罩, 像素大小, 混合强度, 羽化半径, 混合模式, 反转遮罩, 保持颜色):
-        batch_size, height, width, channels = 图像.shape
+    def partial_pixelize(self, image, mask, pixel_size, blend_strength, feather_radius, blend_mode, invert_mask, preserve_colors):
+        batch_size, height, width, channels = image.shape
         processed_images = []
         
         for i in range(batch_size):
-            # 转换为PIL图像
-            img_tensor = 图像[i]
+            # Convert to PIL image
+            img_tensor = image[i]
             img_np = (img_tensor.cpu().numpy() * 255).astype(np.uint8)
             img_pil = Image.fromarray(img_np, mode='RGB' if channels == 3 else 'RGBA')
             
-            # 处理遮罩
-            if i < 遮罩.shape[0]:
-                mask_tensor = 遮罩[i]
+            # Process mask
+            if i < mask.shape[0]:
+                mask_tensor = mask[i]
             else:
-                mask_tensor = 遮罩[0]  # 如果遮罩数量不足，使用第一个
+                mask_tensor = mask[0]  # Use first mask if not enough masks
             
             mask_np = (mask_tensor.cpu().numpy() * 255).astype(np.uint8)
             mask_pil = Image.fromarray(mask_np, mode='L')
             
-            # 确保遮罩尺寸匹配
+            # Ensure mask size matches
             if mask_pil.size != (width, height):
                 mask_pil = mask_pil.resize((width, height), Image.LANCZOS)
             
-            # 反转遮罩
-            if 反转遮罩:
+            # Invert mask
+            if invert_mask:
                 mask_np = 255 - np.array(mask_pil)
                 mask_pil = Image.fromarray(mask_np, mode='L')
             
-            # 应用羽化
-            if 羽化半径 > 0:
-                mask_pil = mask_pil.filter(ImageFilter.GaussianBlur(radius=羽化半径))
+            # Apply feathering
+            if feather_radius > 0:
+                mask_pil = mask_pil.filter(ImageFilter.GaussianBlur(radius=feather_radius))
             
-            # 创建像素化版本
-            pixel_width = max(1, width // 像素大小)
-            pixel_height = max(1, height // 像素大小)
+            # Create pixelized version
+            pixel_width = max(1, width // pixel_size)
+            pixel_height = max(1, height // pixel_size)
             
-            # 缩小图像
+            # Downscale image
             img_small = img_pil.resize((pixel_width, pixel_height), Image.NEAREST)
             
-            # 如果保持颜色，只像素化形状
-            if 保持颜色:
-                # 创建亮度图
+            # If preserving colors, only pixelize shape
+            if preserve_colors:
+                # Create luminance map
                 img_gray = img_pil.convert('L')
                 gray_small = img_gray.resize((pixel_width, pixel_height), Image.NEAREST)
                 gray_pixelated = gray_small.resize((width, height), Image.NEAREST)
                 
-                # 将像素化的亮度应用到原始颜色
+                # Apply pixelized luminance to original colors
                 img_hsv = img_pil.convert('HSV')
                 h, s, v = img_hsv.split()
                 img_hsv = Image.merge('HSV', (h, s, gray_pixelated))
                 img_pixelated = img_hsv.convert('RGB')
             else:
-                # 标准像素化
+                # Standard pixelization
                 img_pixelated = img_small.resize((width, height), Image.NEAREST)
             
-            # 应用混合模式
-            if 混合模式 == "正常":
+            # Apply blend mode
+            if blend_mode == "normal":
                 img_blended = img_pixelated
-            elif 混合模式 == "叠加":
+            elif blend_mode == "overlay":
                 img_blended = self._overlay_blend(img_pil, img_pixelated)
-            elif 混合模式 == "柔光":
+            elif blend_mode == "soft_light":
                 img_blended = self._soft_light_blend(img_pil, img_pixelated)
-            elif 混合模式 == "强光":
+            elif blend_mode == "hard_light":
                 img_blended = self._hard_light_blend(img_pil, img_pixelated)
             
-            # 根据遮罩和强度混合原图和像素化图像
-            if 混合强度 < 1.0:
-                # 调整遮罩强度
+            # Blend with original based on mask and strength
+            if blend_strength < 1.0:
+                # Adjust mask strength
                 mask_np = np.array(mask_pil).astype(np.float32) / 255.0
-                mask_np = mask_np * 混合强度
+                mask_np = mask_np * blend_strength
                 mask_pil = Image.fromarray((mask_np * 255).astype(np.uint8), mode='L')
             
-            # 使用遮罩合成
+            # Composite using mask
             img_result = Image.composite(img_blended, img_pil, mask_pil)
             
-            # 转换回tensor
+            # Convert back to tensor
             img_np = np.array(img_result).astype(np.float32) / 255.0
             img_tensor = torch.from_numpy(img_np)
             processed_images.append(img_tensor)
@@ -390,11 +390,11 @@ class PartialPixelizeNode:
         return (output,)
     
     def _overlay_blend(self, base, overlay):
-        """叠加混合模式"""
+        """Overlay blend mode"""
         base_np = np.array(base).astype(np.float32) / 255.0
         overlay_np = np.array(overlay).astype(np.float32) / 255.0
         
-        # 叠加公式
+        # Overlay formula
         result = np.where(base_np < 0.5,
                          2 * base_np * overlay_np,
                          1 - 2 * (1 - base_np) * (1 - overlay_np))
@@ -403,11 +403,11 @@ class PartialPixelizeNode:
         return Image.fromarray(result, mode='RGB')
     
     def _soft_light_blend(self, base, overlay):
-        """柔光混合模式"""
+        """Soft light blend mode"""
         base_np = np.array(base).astype(np.float32) / 255.0
         overlay_np = np.array(overlay).astype(np.float32) / 255.0
         
-        # 柔光公式
+        # Soft light formula
         result = np.where(overlay_np < 0.5,
                          base_np - (1 - 2 * overlay_np) * base_np * (1 - base_np),
                          base_np + (2 * overlay_np - 1) * (np.sqrt(base_np) - base_np))
@@ -417,11 +417,11 @@ class PartialPixelizeNode:
         return Image.fromarray(result, mode='RGB')
     
     def _hard_light_blend(self, base, overlay):
-        """强光混合模式"""
+        """Hard light blend mode"""
         base_np = np.array(base).astype(np.float32) / 255.0
         overlay_np = np.array(overlay).astype(np.float32) / 255.0
         
-        # 强光公式（与叠加相反）
+        # Hard light formula (reverse of overlay)
         result = np.where(overlay_np < 0.5,
                          2 * base_np * overlay_np,
                          1 - 2 * (1 - base_np) * (1 - overlay_np))
@@ -431,86 +431,86 @@ class PartialPixelizeNode:
 
 class PixelArtEnhanceNode:
     """
-    像素艺术增强节点，提供更多像素处理选项
+    Pixel art enhancement node, providing more pixel processing options
     """
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "图像": ("IMAGE",),
-                "处理模式": (["像素化", "像素校正", "像素优化"],),
-                "像素大小": ("INT", {
+                "image": ("IMAGE",),
+                "process_mode": (["pixelize", "pixel_correct", "pixel_optimize"],),
+                "pixel_size": ("INT", {
                     "default": 8,
                     "min": 1,
                     "max": 64,
                     "step": 1,
                     "display": "number"
                 }),
-                "颜色量化": ("INT", {
+                "color_quantization": ("INT", {
                     "default": 0,
                     "min": 0,
                     "max": 256,
                     "step": 1,
                     "display": "number"
                 }),
-                "抖动": ("BOOLEAN", {"default": False}),
-                "保持锐利": ("BOOLEAN", {"default": True}),
+                "dithering": ("BOOLEAN", {"default": False}),
+                "keep_sharp": ("BOOLEAN", {"default": True}),
             },
         }
     
     RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("图像",)
+    RETURN_NAMES = ("image",)
     FUNCTION = "enhance"
-    CATEGORY = "🐳Pond/图像"
+    CATEGORY = "🐳Pond/image"
     
-    def enhance(self, 图像, 处理模式, 像素大小, 颜色量化, 抖动, 保持锐利):
-        batch_size, height, width, channels = 图像.shape
+    def enhance(self, image, process_mode, pixel_size, color_quantization, dithering, keep_sharp):
+        batch_size, height, width, channels = image.shape
         processed_images = []
         
         for i in range(batch_size):
-            # 转换为PIL图像
-            img_tensor = 图像[i]
+            # Convert to PIL image
+            img_tensor = image[i]
             img_np = (img_tensor.cpu().numpy() * 255).astype(np.uint8)
             img_pil = Image.fromarray(img_np, mode='RGB' if channels == 3 else 'RGBA')
             
-            if 处理模式 == "像素化":
-                # 标准像素化处理
-                pixel_width = width // 像素大小
-                pixel_height = height // 像素大小
+            if process_mode == "pixelize":
+                # Standard pixelization process
+                pixel_width = width // pixel_size
+                pixel_height = height // pixel_size
                 
-                # 应用颜色量化
-                if 颜色量化 > 0:
-                    img_pil = img_pil.quantize(colors=颜色量化, dither=Image.FLOYDSTEINBERG if 抖动 else Image.NONE)
+                # Apply color quantization
+                if color_quantization > 0:
+                    img_pil = img_pil.quantize(colors=color_quantization, dither=Image.FLOYDSTEINBERG if dithering else Image.NONE)
                     img_pil = img_pil.convert('RGB')
                 
-                # 缩小
-                img_small = img_pil.resize((pixel_width, pixel_height), Image.NEAREST if 保持锐利 else Image.LANCZOS)
+                # Downscale
+                img_small = img_pil.resize((pixel_width, pixel_height), Image.NEAREST if keep_sharp else Image.LANCZOS)
                 
-                # 放大
+                # Upscale
                 img_processed = img_small.resize((width, height), Image.NEAREST)
                 
-            elif 处理模式 == "像素校正":
-                # 检测并校正非正方形像素
-                # 这里简化处理，直接按照高度进行缩放
+            elif process_mode == "pixel_correct":
+                # Detect and correct non-square pixels
+                # Simplified processing, scale directly by height
                 img_processed = img_pil.resize((width, width), Image.NEAREST)
                 
-            else:  # 像素优化
-                # 优化像素艺术（去除模糊，增强边缘）
-                # 增强锐度
-                if 保持锐利:
+            else:  # pixel_optimize
+                # Optimize pixel art (remove blur, enhance edges)
+                # Enhance sharpness
+                if keep_sharp:
                     enhancer = ImageEnhance.Sharpness(img_pil)
                     img_pil = enhancer.enhance(2.0)
                 
-                # 应用最近邻采样确保像素清晰
+                # Apply nearest neighbor sampling to ensure pixel clarity
                 img_processed = img_pil
                 
-                # 颜色量化
-                if 颜色量化 > 0:
-                    img_processed = img_processed.quantize(colors=颜色量化, dither=Image.FLOYDSTEINBERG if 抖动 else Image.NONE)
+                # Color quantization
+                if color_quantization > 0:
+                    img_processed = img_processed.quantize(colors=color_quantization, dither=Image.FLOYDSTEINBERG if dithering else Image.NONE)
                     img_processed = img_processed.convert('RGB')
             
-            # 转换回tensor
+            # Convert back to tensor
             img_np = np.array(img_processed).astype(np.float32) / 255.0
             img_tensor = torch.from_numpy(img_np)
             processed_images.append(img_tensor)
@@ -518,7 +518,7 @@ class PixelArtEnhanceNode:
         output = torch.stack(processed_images)
         return (output,)
 
-# 节点映射
+# Node mappings
 NODE_CLASS_MAPPINGS = {
     "Pixelize": PixelizeNode,
     "SquarePixelCorrection": SquarePixelCorrectionNode,
@@ -527,8 +527,8 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "Pixelize": "🐳像素化",
-    "SquarePixelCorrection": "🐳像素校正",
-    "PartialPixelize": "🐳局部像素化",
-    "PixelArtEnhance": "🐳像素增强"
+    "Pixelize": "🐳Pixelize",
+    "SquarePixelCorrection": "🐳Square Pixel Correction",
+    "PartialPixelize": "🐳Partial Pixelize",
+    "PixelArtEnhance": "🐳Pixel Art Enhance"
 }

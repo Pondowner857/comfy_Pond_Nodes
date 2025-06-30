@@ -7,13 +7,13 @@ class TextCleanerNode:
     @classmethod
     def INPUT_TYPES(cls):
         """
-        定义节点的输入类型
+        Define input types for the node
         """
         return {
             "required": {
                 "text": ("STRING", {"multiline": True, "dynamicPrompts": False}),
                 "tags": ("STRING", {"multiline": True, "dynamicPrompts": False}),
-                "mode": (["删除包含标签/提示词的句子", "删除标签/提示词"], {"default": "删除包含标签/提示词的句子"})
+                "mode": (["remove_sentences_with_tags", "remove_tags_only"], {"default": "remove_sentences_with_tags"})
             }
         }
 
@@ -24,12 +24,12 @@ class TextCleanerNode:
 
     def parse_tags(self, tags):
         """
-        解析标签，支持多种分隔方式，包括中英文标点
+        Parse tags, supporting multiple separator types including Chinese and English punctuation
         """
-        # 中英文标点符号集合
+        # Chinese and English punctuation marks
         separators = r'[,;、\n\s。，；：？！,.?!：]+' 
         
-        # 分割并清理标签
+        # Split and clean tags
         tag_list = [
             tag.strip().lower() 
             for tag in re.split(separators, tags) 
@@ -40,53 +40,53 @@ class TextCleanerNode:
 
     def clean_text(self, text, tags, mode):
         """
-        清理文本的主要函数
+        Main function for cleaning text
         
-        :param text: 输入文本
-        :param tags: 要删除的标签
-        :param mode: 清理模式
-        :return: 清理后的文本
+        :param text: Input text
+        :param tags: Tags to remove
+        :param mode: Cleaning mode
+        :return: Cleaned text
         """
-        # 如果没有标签，直接返回原文
+        # If no tags provided, return original text
         if not tags:
             return (text,)
 
-        # 解析标签
+        # Parse tags
         tag_list = self.parse_tags(tags)
 
-        # 处理不同的清理模式
-        if mode == "删除标签/提示词":
-            # 删除特定标签/提示词
+        # Process different cleaning modes
+        if mode == "remove_tags_only":
+            # Remove specific tags/prompts
             for tag in tag_list:
-                # 使用正则替换，忽略大小写
+                # Use regex replacement, ignoring case
                 text = re.sub(re.escape(tag), '', text, flags=re.IGNORECASE)
         
-        elif mode == "删除包含标签/提示词的句子":
-            # 分割句子（支持中文和英文的句子分隔）
+        elif mode == "remove_sentences_with_tags":
+            # Split sentences (supporting both Chinese and English sentence delimiters)
             sentences = re.split(r'([。！？!?.]+)', text)
             
-            # 重新组装句子，排除包含指定标签的句子
+            # Reassemble sentences, excluding those containing specified tags
             filtered_sentences = []
             for i in range(0, len(sentences), 2):
-                # 检查句子是否包含任何标签
-                if not any(tag in sentences[i].lower() for tag in tag_list):
-                    # 如果句子不包含标签，加入结果
+                # Check if sentence contains any tags
+                if i < len(sentences) and not any(tag in sentences[i].lower() for tag in tag_list):
+                    # If sentence doesn't contain tags, add to result
                     filtered_sentences.append(sentences[i])
-                    # 如果是最后一个句子前的分隔符，也加入
+                    # If there's a delimiter after this sentence, add it too
                     if i + 1 < len(sentences):
                         filtered_sentences.append(sentences[i+1])
             
-            # 重新组装文本
+            # Reassemble text
             text = ''.join(filtered_sentences)
 
-        # 返回清理后的文本
+        # Return cleaned text
         return (text.strip(),)
 
-# 定义 WEB_DICT 以支持节点在 ComfyUI 中的展示
+# Define mappings for ComfyUI node display
 NODE_CLASS_MAPPINGS = {
     "TextCleanerNode": TextCleanerNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "TextCleanerNode": "🐳文本清理器"
+    "TextCleanerNode": "🐳Text Cleaner"
 }

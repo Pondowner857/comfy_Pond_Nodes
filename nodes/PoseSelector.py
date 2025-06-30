@@ -3,12 +3,12 @@ from typing import Dict, List, Tuple
 
 class PoseSelectorNode:
     """
-    ComfyUI节点，用于选择多个姿势标签
+    ComfyUI node for selecting multiple pose tags
     """
     
-    # 姿势数据
+    # Pose data - keeping Chinese names for reference but categories in English
     POSE_DATA = {
-        "综合": {
+        "general": {
             "站立": "standing",
             "弯腰": "bent over",
             "弓背": "arched back",
@@ -63,7 +63,7 @@ class PoseSelectorNode:
             "动态姿势": "dynamic pose",
             "敬礼": "salute"
         },
-        "姿态": {
+        "posture": {
             "侧身坐": "yokozuwari",
             "鸭子坐": "ahirusuwari",
             "盘腿": "indian style",
@@ -89,7 +89,7 @@ class PoseSelectorNode:
             "歪头": "head tilt",
             "前倾": "leaning forward"
         },
-        "手势": {
+        "gesture": {
             "嘘手势": "shushing",
             "翘大拇指": "thumbs up",
             "手放脑后": "arms behind head",
@@ -110,7 +110,7 @@ class PoseSelectorNode:
             "手枪手势": "finger gun",
             "猫爪手势": "cat pose"
         },
-        "视线": {
+        "gaze": {
             "远眺": "looking afar",
             "照镜子": "looking at mirror",
             "看手机": "looking at phone",
@@ -127,7 +127,7 @@ class PoseSelectorNode:
             "看向旁边": "looking to the side",
             "移开目光": "looking away"
         },
-        "整体": {
+        "overall": {
             "嗅闻": "smelling",
             "公主抱": "princess carry",
             "拥抱": "hug",
@@ -154,7 +154,7 @@ class PoseSelectorNode:
             "祈祷": "pray",
             "冥想": "doing a meditation"
         },
-        "上半身": {
+        "upper_body": {
             "伸懒腰": "stretch",
             "托腮": "gill support",
             "牵手": "holding hands",
@@ -199,7 +199,7 @@ class PoseSelectorNode:
         
     @classmethod
     def INPUT_TYPES(cls):
-        """定义输入类型"""
+        """Define input types"""
         inputs = {
             "required": {
                 "separator": (["comma", "space", "newline"], {"default": "comma"}),
@@ -207,25 +207,25 @@ class PoseSelectorNode:
             "optional": {}
         }
         
-        # 为每个分类创建多个单选输入（每个分类提供3个选择框）
+        # Create multiple selection inputs for each category (3 selection boxes per category)
         for category, poses in cls.POSE_DATA.items():
-            # 创建选项列表，格式为 "中文 (english)"
-            options = ["无"]
+            # Create options list, format: "Chinese (english)"
+            options = ["none"]
             for cn, en in poses.items():
                 options.append(f"{cn} ({en})")
             
-            # 为每个分类创建3个选择框
-            for i in range(1, 4):  # 创建3个选择框
+            # Create 3 selection boxes for each category
+            for i in range(1, 4):  # Create 3 selection boxes
                 inputs["optional"][f"select_{category}_{i}"] = (options, {
-                    "default": "无",
-                    "tooltip": f"选择{category}相关的姿势标签 #{i}"
+                    "default": "none",
+                    "tooltip": f"Select {category} related pose tag #{i}"
                 })
         
-        # 添加自定义标签输入
+        # Add custom tags input
         inputs["optional"]["custom_tags"] = ("STRING", {
             "default": "",
             "multiline": True,
-            "placeholder": "输入自定义标签，用逗号分隔"
+            "placeholder": "Enter custom tags, comma separated"
         })
         
         return inputs
@@ -236,38 +236,38 @@ class PoseSelectorNode:
     CATEGORY = "🐳Pond/text"
     
     def process_poses(self, separator="comma", custom_tags="", **kwargs):
-        """处理选择的姿势并返回标签"""
+        """Process selected poses and return tags"""
         english_tags = []
         chinese_tags = []
         
-        # 处理每个分类的选择
+        # Process selections for each category
         for key, value in kwargs.items():
-            if key.startswith("select_") and value and value != "无":
-                # 从键名中提取分类名（去掉末尾的_数字）
+            if key.startswith("select_") and value and value != "none":
+                # Extract category name from key (remove trailing _number)
                 key_parts = key.replace("select_", "").rsplit("_", 1)
                 category = key_parts[0]
                 
                 if category in self.POSE_DATA:
-                    # value 是一个字符串
+                    # value is a string
                     selected = value
-                    # 从 "中文 (english)" 格式中提取
+                    # Extract from "Chinese (english)" format
                     if " (" in selected and selected.endswith(")"):
                         cn_part = selected.split(" (")[0]
-                        # 在原始数据中查找对应的英文
+                        # Find corresponding English in original data
                         if cn_part in self.POSE_DATA[category]:
                             en_tag = self.POSE_DATA[category][cn_part]
-                            # 避免重复添加
+                            # Avoid duplicates
                             if en_tag not in english_tags:
                                 english_tags.append(en_tag)
                                 chinese_tags.append(cn_part)
         
-        # 处理自定义标签
+        # Process custom tags
         if custom_tags.strip():
             custom_list = [tag.strip() for tag in custom_tags.split(",") if tag.strip()]
             english_tags.extend(custom_list)
             chinese_tags.extend(custom_list)
         
-        # 根据分隔符组合标签
+        # Combine tags based on separator
         if separator == "comma":
             sep = ", "
         elif separator == "space":
@@ -281,19 +281,19 @@ class PoseSelectorNode:
         
         return (english_result, chinese_result, combined_result)
 
-# 简化版本 - 使用分类选择器
+# Simplified version - using category selector
 class PoseSelectorSimple:
     """
-    ComfyUI节点，使用更便捷的方式选择姿势标签
+    ComfyUI node for selecting pose tags in a more convenient way
     """
     
     POSE_DATA = PoseSelectorNode.POSE_DATA
     
     @classmethod
     def INPUT_TYPES(cls):
-        """定义输入类型"""
+        """Define input types"""
         
-        # 为每个分类生成编号列表
+        # Generate numbered lists for each category
         pose_lists = {}
         for category, poses in cls.POSE_DATA.items():
             pose_list = []
@@ -309,33 +309,33 @@ class PoseSelectorSimple:
             "optional": {}
         }
         
-        # 为每个分类创建选择输入
+        # Create selection inputs for each category
         for category in cls.POSE_DATA.keys():
-            # 显示可选姿势列表
-            inputs["optional"][f"{category}_列表"] = ("STRING", {
+            # Display available poses list
+            inputs["optional"][f"{category}_list"] = ("STRING", {
                 "default": pose_lists[category],
                 "multiline": True,
                 "dynamicPrompts": False,
-                "tooltip": f"{category}分类的所有可选姿势"
+                "tooltip": f"All available poses in {category} category"
             })
             
-            # 输入选择的编号
-            inputs["optional"][f"{category}_选择"] = ("STRING", {
+            # Input for selected numbers
+            inputs["optional"][f"{category}_selection"] = ("STRING", {
                 "default": "",
-                "placeholder": "输入编号，如: 1,3,5 或 1-5,8,10",
-                "tooltip": f"输入要选择的{category}姿势编号"
+                "placeholder": "Enter numbers, e.g.: 1,3,5 or 1-5,8,10",
+                "tooltip": f"Enter numbers of {category} poses to select"
             })
         
-        # 快速预设
-        inputs["optional"]["快速预设"] = (["无", "基础站姿", "基础坐姿", "动作姿势", "可爱姿势", "日常动作"], {
-            "default": "无"
+        # Quick presets
+        inputs["optional"]["quick_preset"] = (["none", "basic_standing", "basic_sitting", "action_poses", "cute_poses", "daily_actions"], {
+            "default": "none"
         })
         
-        # 添加自定义标签输入
+        # Add custom tags input
         inputs["optional"]["custom_tags"] = ("STRING", {
             "default": "",
             "multiline": True,
-            "placeholder": "输入自定义标签，用逗号分隔"
+            "placeholder": "Enter custom tags, comma separated"
         })
         
         return inputs
@@ -345,17 +345,17 @@ class PoseSelectorSimple:
     FUNCTION = "process_poses"
     CATEGORY = "🐳Pond/text"
     
-    # 预设定义
+    # Preset definitions
     PRESETS = {
-        "基础站姿": {"综合": [1, 8], "视线": [7]},  # standing, sitting, look at viewer
-        "基础坐姿": {"综合": [8, 22, 34], "视线": [7]},  # sitting相关
-        "动作姿势": {"综合": [55, 38], "整体": [8, 9, 10]},  # dynamic pose, fighting_stance等
-        "可爱姿势": {"姿态": [23], "手势": [8], "视线": [7]},  # head tilt, V pose等
-        "日常动作": {"整体": [9, 10], "上半身": [27, 29, 30]}  # walking, holding相关
+        "basic_standing": {"general": [1, 8], "gaze": [7]},  # standing, sitting, look at viewer
+        "basic_sitting": {"general": [8, 22, 34], "gaze": [7]},  # sitting related
+        "action_poses": {"general": [55, 38], "overall": [8, 9, 10]},  # dynamic pose, fighting_stance etc
+        "cute_poses": {"posture": [23], "gesture": [8], "gaze": [7]},  # head tilt, V pose etc
+        "daily_actions": {"overall": [9, 10], "upper_body": [27, 29, 30]}  # walking, holding related
     }
     
     def parse_selection(self, selection_str):
-        """解析选择字符串，支持 1,3,5 或 1-5,8,10 格式"""
+        """Parse selection string, supports 1,3,5 or 1-5,8,10 format"""
         selected = []
         if not selection_str.strip():
             return selected
@@ -363,7 +363,7 @@ class PoseSelectorSimple:
         parts = selection_str.replace(" ", "").split(",")
         for part in parts:
             if "-" in part:
-                # 范围选择
+                # Range selection
                 try:
                     start, end = part.split("-")
                     start, end = int(start), int(end)
@@ -371,7 +371,7 @@ class PoseSelectorSimple:
                 except:
                     pass
             else:
-                # 单个选择
+                # Single selection
                 try:
                     selected.append(int(part))
                 except:
@@ -379,13 +379,13 @@ class PoseSelectorSimple:
         
         return selected
     
-    def process_poses(self, separator="comma", output_format="english", 快速预设="无", custom_tags="", **kwargs):
-        """处理选择的姿势并返回标签"""
+    def process_poses(self, separator="comma", output_format="english", quick_preset="none", custom_tags="", **kwargs):
+        """Process selected poses and return tags"""
         selected_tags = []
         
-        # 处理预设
-        if 快速预设 != "无" and 快速预设 in self.PRESETS:
-            preset = self.PRESETS[快速预设]
+        # Process presets
+        if quick_preset != "none" and quick_preset in self.PRESETS:
+            preset = self.PRESETS[quick_preset]
             for category, indices in preset.items():
                 if category in self.POSE_DATA:
                     poses_list = list(self.POSE_DATA[category].items())
@@ -399,9 +399,9 @@ class PoseSelectorSimple:
                             else:  # both
                                 selected_tags.append(f"{cn} ({en})")
         
-        # 处理每个分类的选择
+        # Process selections for each category
         for category in self.POSE_DATA.keys():
-            selection_key = f"{category}_选择"
+            selection_key = f"{category}_selection"
             if selection_key in kwargs and kwargs[selection_key]:
                 selected_indices = self.parse_selection(kwargs[selection_key])
                 poses_list = list(self.POSE_DATA[category].items())
@@ -416,15 +416,15 @@ class PoseSelectorSimple:
                         else:  # both
                             selected_tags.append(f"{cn} ({en})")
         
-        # 处理自定义标签
+        # Process custom tags
         if custom_tags.strip():
             custom_list = [tag.strip() for tag in custom_tags.split(",") if tag.strip()]
             selected_tags.extend(custom_list)
         
-        # 去重
+        # Remove duplicates
         selected_tags = list(dict.fromkeys(selected_tags))
         
-        # 根据分隔符组合标签
+        # Combine tags based on separator
         if separator == "comma":
             sep = ", "
         elif separator == "space":
@@ -438,7 +438,7 @@ class PoseSelectorSimple:
 
 class PoseSelectorBatch:
     """
-    批量姿势生成器 - 生成多组姿势组合
+    Batch pose generator - generates multiple pose combinations
     """
     
     POSE_DATA = PoseSelectorNode.POSE_DATA
@@ -450,49 +450,49 @@ class PoseSelectorBatch:
                 "batch_count": ("INT", {"default": 3, "min": 1, "max": 10}),
                 "tags_per_batch": ("INT", {"default": 3, "min": 1, "max": 10}),
                 "category_weights": ("STRING", {
-                    "default": "综合:0.3, 姿态:0.2, 手势:0.2, 视线:0.1, 整体:0.1, 上半身:0.1",
-                    "placeholder": "分类:权重, 例如 综合:0.3 (权重总和应为1)"
+                    "default": "general:0.3, posture:0.2, gesture:0.2, gaze:0.1, overall:0.1, upper_body:0.1",
+                    "placeholder": "category:weight, e.g. general:0.3 (weights should sum to 1)"
                 }),
                 "ensure_tags": ("STRING", {
                     "default": "look at viewer",
-                    "placeholder": "每组都包含的标签，逗号分隔"
+                    "placeholder": "Tags to include in every batch, comma separated"
                 }),
                 "seed": ("INT", {"default": -1, "min": -1, "max": 2147483647}),
             }
         }
     
-    RETURN_TYPES = ("STRING",) * 10  # 最多返回10个
+    RETURN_TYPES = ("STRING",) * 10  # Return up to 10
     RETURN_NAMES = tuple(f"batch_{i+1}" for i in range(10))
     FUNCTION = "generate_batches"
     CATEGORY = "🐳Pond/text"
     OUTPUT_IS_LIST = (False,) * 10
     
     def generate_batches(self, batch_count, tags_per_batch, category_weights, ensure_tags, seed):
-        """生成多组随机姿势组合"""
+        """Generate multiple random pose combinations"""
         import random
         
         if seed != -1:
             random.seed(seed)
         
-        # 解析权重
+        # Parse weights
         weights = {}
         for item in category_weights.split(','):
             if ':' in item:
                 cat, weight = item.split(':')
                 weights[cat.strip()] = float(weight.strip())
         
-        # 解析必须包含的标签
+        # Parse must-have tags
         must_have = [t.strip() for t in ensure_tags.split(',') if t.strip()]
         
-        # 生成批次
+        # Generate batches
         batches = []
         for i in range(batch_count):
             selected = must_have.copy()
             remaining = tags_per_batch - len(selected)
             
-            # 根据权重随机选择
+            # Select based on weights
             for _ in range(remaining):
-                # 选择分类
+                # Select category
                 categories = list(weights.keys())
                 cat_weights = [weights.get(c, 1) for c in categories]
                 category = random.choices(categories, weights=cat_weights)[0]
@@ -506,14 +506,14 @@ class PoseSelectorBatch:
             
             batches.append(", ".join(selected))
         
-        # 填充到10个输出
+        # Pad to 10 outputs
         while len(batches) < 10:
             batches.append("")
         
         return tuple(batches)
 
 
-# 注册节点
+# Node registration
 NODE_CLASS_MAPPINGS = {
     "PoseSelector": PoseSelectorNode,
     "PoseSelectorSimple": PoseSelectorSimple,
@@ -523,5 +523,5 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "PoseSelector": "🐳Pose Selector (Multi-Select)",
     "PoseSelectorSimple": "🐳Pose Selector (Number Selection)",
-    "PoseSelectorBatch": "🐳随机批次姿势"
+    "PoseSelectorBatch": "🐳Pose Selector (Batch Random)"
 }
