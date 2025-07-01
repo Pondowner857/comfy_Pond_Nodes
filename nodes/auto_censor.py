@@ -6,36 +6,36 @@ from typing import Tuple, Optional
 import os
 import sys
 
-# Import ComfyUI related modules
+# 导入ComfyUI相关模块
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 class AutoCensorWithOpenPose:
     """
-    Node that uses OpenPose to detect skeleton and automatically censor
+    使用OpenPose检测骨骼并自动打码的节点
     """
     
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "image": ("IMAGE", {"tooltip": "Input image to process"}),
+                "image": ("IMAGE", {"tooltip": "输入需要处理的图像"}),
                 "censor_face": ("BOOLEAN", {
                     "default": False,
-                    "label_on": "Censor Face",
-                    "label_off": "Don't Censor Face",
-                    "tooltip": "Whether to censor face area"
+                    "label_on": "打码脸部",
+                    "label_off": "不打码脸部",
+                    "tooltip": "是否对脸部进行打码"
                 }),
                 "censor_chest": ("BOOLEAN", {
                     "default": True,
-                    "label_on": "Censor Chest",
-                    "label_off": "Don't Censor Chest",
-                    "tooltip": "Whether to censor chest area"
+                    "label_on": "打码胸部",
+                    "label_off": "不打码胸部",
+                    "tooltip": "是否对胸部区域进行打码"
                 }),
                 "censor_groin": ("BOOLEAN", {
                     "default": True,
-                    "label_on": "Censor Groin",
-                    "label_off": "Don't Censor Groin",
-                    "tooltip": "Whether to censor groin area"
+                    "label_on": "打码腿根部",
+                    "label_off": "不打码腿根部",
+                    "tooltip": "是否对腿根部区域进行打码"
                 }),
                 "blur_strength": ("INT", {
                     "default": 20,
@@ -43,7 +43,7 @@ class AutoCensorWithOpenPose:
                     "max": 50,
                     "step": 5,
                     "display": "slider",
-                    "tooltip": "Blur strength, higher values mean stronger blur"
+                    "tooltip": "模糊强度，数值越大模糊效果越强"
                 }),
                 "censor_size_multiplier": ("FLOAT", {
                     "default": 1.2,
@@ -51,18 +51,18 @@ class AutoCensorWithOpenPose:
                     "max": 2.0,
                     "step": 0.1,
                     "display": "slider",
-                    "tooltip": "Censor area size multiplier for adjusting coverage"
+                    "tooltip": "打码区域大小倍数，用于调整打码范围"
                 }),
             },
         }
 
     RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("censored_image",)
+    RETURN_NAMES = ("打码后的图像",)
     FUNCTION = "process_image"
     CATEGORY = "🐳Pond/image"
 
     def __init__(self):
-        # OpenPose keypoint indices
+        # OpenPose关键点索引
         self.POSE_BODY_25_BODY_PARTS = {
             "Nose": 0,
             "Neck": 1,
@@ -93,24 +93,24 @@ class AutoCensorWithOpenPose:
 
     def detect_openpose_keypoints(self, image_np):
         """
-        Use MediaPipe to detect body keypoints and map to OpenPose format
+        使用MediaPipe检测人体关键点并映射到OpenPose格式
         """
         try:
             import mediapipe as mp
             
-            # Initialize MediaPipe
+            # 初始化MediaPipe
             mp_pose = mp.solutions.pose
             pose = mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.5)
             
-            # Convert image format
+            # 转换图像格式
             image_rgb = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
             results = pose.process(image_rgb)
             
             h, w = image_np.shape[:2]
-            keypoints = np.zeros((25, 3))  # OpenPose BODY_25 format
+            keypoints = np.zeros((25, 3))  # OpenPose BODY_25格式
             
             if results.pose_landmarks:
-                # MediaPipe to OpenPose mapping
+                # MediaPipe到OpenPose的映射
                 mp_to_op_mapping = {
                     0: 0,   # NOSE -> Nose
                     11: 5,  # LEFT_SHOULDER -> LShoulder
@@ -125,7 +125,7 @@ class AutoCensorWithOpenPose:
                     8: 17,  # RIGHT_EAR -> REar
                 }
                 
-                # Map keypoints
+                # 映射关键点
                 for mp_idx, op_idx in mp_to_op_mapping.items():
                     if mp_idx < len(results.pose_landmarks.landmark):
                         landmark = results.pose_landmarks.landmark[mp_idx]
@@ -135,8 +135,8 @@ class AutoCensorWithOpenPose:
                             landmark.visibility
                         ]
                 
-                # Calculate additional keypoints
-                # Neck (OpenPose idx 1) - midpoint between shoulders
+                # 计算额外的关键点
+                # Neck (OpenPose idx 1) - 两肩膀中点
                 if keypoints[2][2] > 0.1 and keypoints[5][2] > 0.1:
                     keypoints[1] = [
                         (keypoints[2][0] + keypoints[5][0]) / 2,
@@ -144,7 +144,7 @@ class AutoCensorWithOpenPose:
                         (keypoints[2][2] + keypoints[5][2]) / 2
                     ]
                 
-                # MidHip (OpenPose idx 8) - midpoint between hips
+                # MidHip (OpenPose idx 8) - 两臀部中点
                 if keypoints[9][2] > 0.1 and keypoints[12][2] > 0.1:
                     keypoints[8] = [
                         (keypoints[9][0] + keypoints[12][0]) / 2,
@@ -156,12 +156,12 @@ class AutoCensorWithOpenPose:
             return keypoints
             
         except ImportError:
-            print("MediaPipe not installed, using simulated data. Please run: pip install mediapipe")
-            print("Warning: Currently using simulated data for testing, please install MediaPipe for actual use")
-            # Return simulated data for testing
+            print("MediaPipe未安装，使用模拟数据。请运行: pip install mediapipe")
+            print("警告：当前使用模拟数据进行测试，实际使用时请安装MediaPipe")
+            # 返回模拟数据用于测试
             h, w = image_np.shape[:2]
             keypoints = np.zeros((25, 3))
-            # Simulate some keypoints for testing
+            # 模拟一些关键点用于测试
             keypoints[0] = [w/2, h*0.15, 0.9]  # Nose
             keypoints[1] = [w/2, h*0.2, 0.9]  # Neck
             keypoints[2] = [w*0.4, h*0.25, 0.9]  # RShoulder  
@@ -175,11 +175,11 @@ class AutoCensorWithOpenPose:
 
     def get_face_region(self, keypoints, image_shape, size_multiplier):
         """
-        Calculate face region based on facial keypoints
+        根据面部关键点计算脸部区域
         """
         h, w = image_shape[:2]
         
-        # Get face-related keypoints
+        # 获取面部相关关键点
         nose = keypoints[self.POSE_BODY_25_BODY_PARTS["Nose"]]
         neck = keypoints[self.POSE_BODY_25_BODY_PARTS["Neck"]]
         left_eye = keypoints[self.POSE_BODY_25_BODY_PARTS["LEye"]]
@@ -187,39 +187,39 @@ class AutoCensorWithOpenPose:
         left_ear = keypoints[self.POSE_BODY_25_BODY_PARTS["LEar"]]
         right_ear = keypoints[self.POSE_BODY_25_BODY_PARTS["REar"]]
         
-        # Check if keypoints are valid
+        # 检查关键点是否有效
         if nose[2] > 0.1:
-            # Calculate face center (using nose position)
+            # 计算脸部中心（使用鼻子位置）
             face_center_x = nose[0]
             face_center_y = nose[1]
             
-            # Estimate face size
+            # 估算脸部大小
             face_width = 0
             face_height = 0
             
-            # If we have eye keypoints, use eye distance to estimate width
+            # 如果有眼睛关键点，使用眼睛间距估算宽度
             if left_eye[2] > 0.1 and right_eye[2] > 0.1:
                 eye_distance = abs(right_eye[0] - left_eye[0])
                 face_width = eye_distance * 2.5
-            # If we have ear keypoints, use ear distance
+            # 如果有耳朵关键点，使用耳朵间距
             elif left_ear[2] > 0.1 and right_ear[2] > 0.1:
                 ear_distance = abs(right_ear[0] - left_ear[0])
                 face_width = ear_distance * 1.2
-            # Otherwise use default estimation
+            # 否则使用默认估算
             else:
-                face_width = w * 0.15  # Assume face width is about 15% of image width
+                face_width = w * 0.15  # 假设脸宽约为图像宽度的15%
             
-            # If we have neck keypoint, use it to estimate height
+            # 如果有颈部关键点，使用它来估算高度
             if neck[2] > 0.1:
                 face_height = abs(neck[1] - nose[1]) * 2.5
             else:
-                face_height = face_width * 1.3  # Face height is usually 1.3 times the width
+                face_height = face_width * 1.3  # 脸部高度通常是宽度的1.3倍
             
-            # Apply size multiplier
+            # 应用大小倍数
             face_width *= size_multiplier
             face_height *= size_multiplier
             
-            # Calculate bounding box, slightly shift upward to better cover forehead
+            # 计算边界框，稍微向上偏移以更好地覆盖额头
             x1 = int(max(0, face_center_x - face_width/2))
             y1 = int(max(0, face_center_y - face_height/2 - face_height*0.2))
             x2 = int(min(w, face_center_x + face_width/2))
@@ -231,33 +231,33 @@ class AutoCensorWithOpenPose:
 
     def get_chest_region(self, keypoints, image_shape, size_multiplier):
         """
-        Calculate chest region based on shoulder and hip keypoints
+        根据肩膀和臀部关键点计算胸部区域
         """
         h, w = image_shape[:2]
         
-        # Get relevant keypoints
+        # 获取相关关键点
         left_shoulder = keypoints[self.POSE_BODY_25_BODY_PARTS["LShoulder"]]
         right_shoulder = keypoints[self.POSE_BODY_25_BODY_PARTS["RShoulder"]]
         mid_hip = keypoints[self.POSE_BODY_25_BODY_PARTS["MidHip"]]
         neck = keypoints[self.POSE_BODY_25_BODY_PARTS["Neck"]]
         
-        # Check if keypoints are valid
+        # 检查关键点是否有效
         if (left_shoulder[2] > 0.1 and right_shoulder[2] > 0.1 and 
             mid_hip[2] > 0.1 and neck[2] > 0.1):
             
-            # Calculate chest center position
+            # 计算胸部中心位置
             chest_x = (left_shoulder[0] + right_shoulder[0]) / 2
             chest_y = (neck[1] + mid_hip[1]) / 2
             
-            # Calculate chest area size
+            # 计算胸部区域大小
             shoulder_width = abs(right_shoulder[0] - left_shoulder[0])
             chest_height = abs(mid_hip[1] - neck[1]) * 0.4
             
-            # Apply size multiplier
+            # 应用大小倍数
             width = shoulder_width * size_multiplier
             height = chest_height * size_multiplier
             
-            # Calculate bounding box
+            # 计算边界框
             x1 = int(max(0, chest_x - width/2))
             y1 = int(max(0, chest_y - height/2))
             x2 = int(min(w, chest_x + width/2))
@@ -269,38 +269,38 @@ class AutoCensorWithOpenPose:
 
     def get_groin_region(self, keypoints, image_shape, size_multiplier):
         """
-        Calculate groin region based on hip and knee keypoints
+        根据臀部和膝盖关键点计算腿根部区域
         """
         h, w = image_shape[:2]
         
-        # Get relevant keypoints
+        # 获取相关关键点
         mid_hip = keypoints[self.POSE_BODY_25_BODY_PARTS["MidHip"]]
         left_hip = keypoints[self.POSE_BODY_25_BODY_PARTS["LHip"]]
         right_hip = keypoints[self.POSE_BODY_25_BODY_PARTS["RHip"]]
         left_knee = keypoints[self.POSE_BODY_25_BODY_PARTS["LKnee"]]
         right_knee = keypoints[self.POSE_BODY_25_BODY_PARTS["RKnee"]]
         
-        # Check if keypoints are valid
+        # 检查关键点是否有效
         if (mid_hip[2] > 0.1 and left_hip[2] > 0.1 and right_hip[2] > 0.1):
             
-            # Calculate groin center position
+            # 计算腿根部中心位置
             groin_x = mid_hip[0]
             groin_y = mid_hip[1]
             
-            # If knee keypoints are valid, use them to adjust position
+            # 如果膝盖关键点有效，使用它们来调整位置
             if left_knee[2] > 0.1 and right_knee[2] > 0.1:
                 knee_y = (left_knee[1] + right_knee[1]) / 2
                 groin_y = (mid_hip[1] + knee_y) / 2
             
-            # Calculate groin area size
+            # 计算腿根部区域大小
             hip_width = abs(right_hip[0] - left_hip[0])
             groin_height = hip_width * 0.8
             
-            # Apply size multiplier
+            # 应用大小倍数
             width = hip_width * size_multiplier
             height = groin_height * size_multiplier
             
-            # Calculate bounding box
+            # 计算边界框
             x1 = int(max(0, groin_x - width/2))
             y1 = int(max(0, groin_y - height/2))
             x2 = int(min(w, groin_x + width/2))
@@ -312,20 +312,20 @@ class AutoCensorWithOpenPose:
 
     def apply_blur(self, image, region, blur_strength):
         """
-        Apply blur effect to specified region
+        对指定区域应用模糊效果
         """
         if region is None:
             return image
         
         x1, y1, x2, y2 = region
         
-        # Extract region
+        # 提取区域
         region_img = image[y1:y2, x1:x2]
         
-        # Apply Gaussian blur
+        # 应用高斯模糊
         blurred_region = cv2.GaussianBlur(region_img, (blur_strength*2+1, blur_strength*2+1), 0)
         
-        # Put blurred region back into original image
+        # 将模糊区域放回原图
         result = image.copy()
         result[y1:y2, x1:x2] = blurred_region
         
@@ -333,7 +333,7 @@ class AutoCensorWithOpenPose:
 
     def apply_elliptical_blur(self, image, region, blur_strength, is_face=False):
         """
-        Apply elliptical blur effect to specified region (for more natural effect on face etc.)
+        对指定区域应用椭圆形模糊效果（用于脸部等需要更自然效果的区域）
         """
         if region is None:
             return image
@@ -344,14 +344,14 @@ class AutoCensorWithOpenPose:
         width = x2 - x1
         height = y2 - y1
         
-        # Create elliptical mask
+        # 创建椭圆形遮罩
         mask = np.zeros(image.shape[:2], dtype=np.uint8)
         cv2.ellipse(mask, (center_x, center_y), (width//2, height//2), 0, 0, 360, 255, -1)
         
-        # Create blurred version
+        # 创建模糊版本
         blurred = cv2.GaussianBlur(image, (blur_strength*2+1, blur_strength*2+1), 0)
         
-        # Use mask to blend original and blurred images
+        # 使用遮罩混合原图和模糊图
         result = image.copy()
         mask_3channel = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR) / 255.0
         result = (1 - mask_3channel) * image + mask_3channel * blurred
@@ -360,78 +360,78 @@ class AutoCensorWithOpenPose:
 
     def process_image(self, image, censor_face, censor_chest, censor_groin, blur_strength, censor_size_multiplier):
         """
-        Main function to process image
+        处理图像的主函数
         """
-        # Parameter validation
+        # 参数验证
         if not censor_face and not censor_chest and not censor_groin:
-            print("Note: No censor areas selected, returning original image")
+            print("提示：未选择任何打码区域，将返回原图")
             return (image,)
         
-        # Convert image format
+        # 转换图像格式
         image_np = (image.squeeze(0).cpu().numpy() * 255).astype(np.uint8)
         
-        # Detect OpenPose keypoints
-        print("Detecting body pose...")
+        # 检测OpenPose关键点
+        print("正在检测人体姿态...")
         keypoints = self.detect_openpose_keypoints(image_np)
         
-        # Check if body is detected
+        # 检查是否检测到人体
         valid_keypoints = np.sum(keypoints[:, 2] > 0.1)
         if valid_keypoints < 3:
-            print("Warning: No valid body pose detected, please ensure image contains clear human body")
+            print("警告：未检测到有效的人体姿态，请确保图像中包含清晰的人体")
             return (image,)
         
-        # Determine regions to censor based on options
+        # 根据选项决定要打码的区域
         regions_to_blur = []
         face_region = None
         chest_region = None
         groin_region = None
         
         if censor_face:
-            print("Locating face area...")
+            print("正在定位脸部区域...")
             face_region = self.get_face_region(keypoints, image_np.shape, censor_size_multiplier)
             if face_region:
                 regions_to_blur.append(face_region)
-                print("✓ Successfully located face area")
+                print("✓ 成功定位脸部区域")
             else:
-                print("✗ Unable to locate face area")
+                print("✗ 无法定位脸部区域")
         
         if censor_chest:
-            print("Locating chest area...")
+            print("正在定位胸部区域...")
             chest_region = self.get_chest_region(keypoints, image_np.shape, censor_size_multiplier)
             if chest_region:
                 regions_to_blur.append(chest_region)
-                print("✓ Successfully located chest area")
+                print("✓ 成功定位胸部区域")
             else:
-                print("✗ Unable to locate chest area")
+                print("✗ 无法定位胸部区域")
         
         if censor_groin:
-            print("Locating groin area...")
+            print("正在定位腿根部区域...")
             groin_region = self.get_groin_region(keypoints, image_np.shape, censor_size_multiplier)
             if groin_region:
                 regions_to_blur.append(groin_region)
-                print("✓ Successfully located groin area")
+                print("✓ 成功定位腿根部区域")
             else:
-                print("✗ Unable to locate groin area")
+                print("✗ 无法定位腿根部区域")
         
-        # If no regions found
+        # 如果没有找到任何区域
         if not regions_to_blur:
-            print("Warning: Unable to locate any areas to censor")
+            print("警告：未能定位任何需要打码的区域")
             return (image,)
         
-        # Apply blur effect
-        print(f"Applying blur effect (strength: {blur_strength})...")
+        # 应用模糊效果
+        print(f"正在应用模糊效果（强度：{blur_strength}）...")
         result_image = image_np.copy()
         
-        # Process different types of regions separately
+        # 分别处理不同类型的区域
         region_index = 0
         
-        # Process face (using elliptical blur)
+        # 处理脸部（使用椭圆形模糊）
         if censor_face and face_region:
             result_image = self.apply_elliptical_blur(result_image, face_region, blur_strength, is_face=True)
             region_index += 1
-            print(f"✓ Processed face area (elliptical blur)")
+            print(f"✓ 已处理脸部区域（椭圆形模糊）")
         
-        # Process other regions (using rectangular blur)
+        # 处理其他区域（使用矩形模糊）
         other_regions = []
         if censor_chest and chest_region:
             other_regions.append(chest_region)
@@ -441,43 +441,43 @@ class AutoCensorWithOpenPose:
         for region in other_regions:
             result_image = self.apply_blur(result_image, region, blur_strength)
             region_index += 1
-            print(f"✓ Processed region {region_index}/{len(regions_to_blur)}")
+            print(f"✓ 已处理区域 {region_index}/{len(regions_to_blur)}")
         
-        # Convert back to torch tensor format
+        # 转换回torch张量格式
         result_tensor = torch.from_numpy(result_image.astype(np.float32) / 255.0).unsqueeze(0)
         
-        print("✓ Censoring process complete!")
+        print("✓ 打码处理完成！")
         return (result_tensor,)
 
 
-# Helper class for actual OpenPose integration
+# 用于实际集成OpenPose的辅助类
 class OpenPoseDetector:
     """
-    For actual use, this class should contain real OpenPose integration
+    实际使用时，这个类应该包含真正的OpenPose集成
     """
     def __init__(self):
-        # Initialize OpenPose model
-        # Can use one of the following options:
+        # 初始化OpenPose模型
+        # 可以使用以下选项之一：
         # 1. openpose-python
         # 2. mediapipe
         # 3. mmpose
-        # 4. Other pose estimation libraries
+        # 4. 其他姿态估计库
         pass
     
     def detect(self, image):
         """
-        Detect body keypoints in image
-        Return format: numpy array of shape (25, 3) for BODY_25 model
+        检测图像中的人体关键点
+        返回格式：numpy array of shape (25, 3) for BODY_25 model
         """
-        # Implement actual detection logic
+        # 实现实际的检测逻辑
         pass
 
 
-# Node registration
+# 节点注册
 NODE_CLASS_MAPPINGS = {
     "AutoCensorWithOpenPose": AutoCensorWithOpenPose
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "AutoCensorWithOpenPose": "🐳Auto Censor"
+    "AutoCensorWithOpenPose": "🐳自动打码"
 }

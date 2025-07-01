@@ -1,13 +1,14 @@
 import torch
+import comfy.model_management
 
-class MaskSwitch:
+class 遮罩切换:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "mask1": ("MASK",),
                 "mask2": ("MASK",),
-                "select_mask": (["mask1", "mask2"],),
+                "select_mask": [("mask1", "mask2")],
             }
         }
 
@@ -23,9 +24,9 @@ class MaskSwitch:
 
 # Make sure this mapping exists for ComfyUI to recognize the node
 NODE_CLASS_MAPPINGS = {
-    "MaskSwitch": MaskSwitch
+    "遮罩切换": 遮罩切换
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "MaskSwitch": "🐳Mask Switch"
+    "遮罩切换": "🐳遮罩切换"
 }

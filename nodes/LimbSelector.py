@@ -5,64 +5,64 @@ class Pond_c_f:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "hair": ("BOOLEAN", {"default": False}),
-                "left_eye": ("BOOLEAN", {"default": False}),
-                "right_eye": ("BOOLEAN", {"default": False}),
-                "left_eyebrow": ("BOOLEAN", {"default": False}),
-                "right_eyebrow": ("BOOLEAN", {"default": False}),
-                "nose": ("BOOLEAN", {"default": False}),
-                "mouth": ("BOOLEAN", {"default": False}),
-                "teeth": ("BOOLEAN", {"default": False}),
-                "left_ear": ("BOOLEAN", {"default": False}),
-                "right_ear": ("BOOLEAN", {"default": False}),
-                "left_arm": ("BOOLEAN", {"default": False}),
-                "right_arm": ("BOOLEAN", {"default": False}),
-                "left_hand": ("BOOLEAN", {"default": False}),
-                "right_hand": ("BOOLEAN", {"default": False}),
-                "left_leg": ("BOOLEAN", {"default": False}),
-                "right_leg": ("BOOLEAN", {"default": False}),
-                "left_foot": ("BOOLEAN", {"default": False}),
-                "right_foot": ("BOOLEAN", {"default": False}),
-                "face": ("BOOLEAN", {"default": False}),
-                "body": ("BOOLEAN", {"default": False}),
+                "头发": ("BOOLEAN", {"default": False}),
+                "左眼": ("BOOLEAN", {"default": False}),
+                "右眼": ("BOOLEAN", {"default": False}),
+                "左眉": ("BOOLEAN", {"default": False}),
+                "右眉": ("BOOLEAN", {"default": False}),
+                "鼻子": ("BOOLEAN", {"default": False}),
+                "嘴巴": ("BOOLEAN", {"default": False}),
+                "牙齿": ("BOOLEAN", {"default": False}),
+                "左耳": ("BOOLEAN", {"default": False}),
+                "右耳": ("BOOLEAN", {"default": False}),
+                "左胳膊": ("BOOLEAN", {"default": False}),
+                "右胳膊": ("BOOLEAN", {"default": False}),
+                "左手": ("BOOLEAN", {"default": False}),
+                "右手": ("BOOLEAN", {"default": False}),
+                "左腿": ("BOOLEAN", {"default": False}),
+                "右腿": ("BOOLEAN", {"default": False}),
+                "左脚": ("BOOLEAN", {"default": False}),
+                "右脚": ("BOOLEAN", {"default": False}),
+                "脸部": ("BOOLEAN", {"default": False}),
+                "身体": ("BOOLEAN", {"default": False}),
             },
         }
 
     RETURN_TYPES = ("STRING",)
     FUNCTION = "process"
-    CATEGORY = "🐳Pond/selector"
+    CATEGORY = "🐳Pond/选择器"
 
     def process(self, **kwargs):
-        # Get English names of all selected body parts
+        # 获取所有被选中的部位的英文名称
         active_parts = []
         body_parts_map = {
-            "hair": "hair",
-            "left_eye": "left eye",
-            "right_eye": "right eye",
-            "left_eyebrow": "left eyebrow",
-            "right_eyebrow": "right eyebrow",
-            "nose": "nose",
-            "mouth": "mouth",
-            "teeth": "teeth",
-            "left_ear": "left ear",
-            "right_ear": "right ear",
-            "left_arm": "left arm",
-            "right_arm": "right arm",
-            "left_hand": "left hand",
-            "right_hand": "right hand",
-            "left_leg": "left leg",
-            "right_leg": "right leg",
-            "left_foot": "left foot",
-            "right_foot": "right foot",
-            "face": "face",
-            "body": "body"
+            "头发": "hair",
+            "左眼": "left eye",
+            "右眼": "right eye",
+            "左眉": "left eyebrow",
+            "右眉": "right eyebrow",
+            "鼻子": "nose",
+            "嘴巴": "mouth",
+            "牙齿": "teeth",
+            "左耳": "left ear",
+            "右耳": "right ear",
+            "左胳膊": "left arm",
+            "右胳膊": "right arm",
+            "左手": "left hand",
+            "右手": "right hand",
+            "左腿": "left leg",
+            "右腿": "right leg",
+            "左脚": "left foot",
+            "右脚": "right foot",
+            "脸部": "face",
+            "身体": "body"
         }
 
         for part, value in kwargs.items():
-            if value and part in body_parts_map:
+            if value:
                 active_parts.append(body_parts_map[part])
 
-        # Return comma-separated English body part names
+        # 返回逗号分隔的英文部位名称
         return (", ".join(active_parts),)
 
 NODE_CLASS_MAPPINGS = {
@@ -70,5 +70,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "Pond_c_f": "🐳Limb Selector"
+    "Pond_c_f": "🐳肢体选择器"
 }
