@@ -1,12 +1,12 @@
 /**
  * Hardware Monitor Plugin for ComfyUI
- * 可拖动悬浮窗显示硬件监控信息，带进度条显示
- * 支持自定义透明度、颜色、背景和配置保存
+ * Draggable floating window displaying hardware monitoring information with progress bars
+ * Supports custom transparency, colors, background and configuration saving
  */
 
-// 直接开始检查DOM
+// Start checking DOM directly
 (function() {
-    // 添加必要的CSS样式
+    // Add necessary CSS styles
     const styleSheet = document.createElement('style');
     styleSheet.id = 'hardware-monitor-styles';
     styleSheet.textContent = `
@@ -29,7 +29,7 @@
             background-repeat: no-repeat;
         }
         
-        /* 悬浮窗样式 */
+        /* Floating window styles */
         .hardware-monitor-float {
             position: fixed;
             top: 50px;
@@ -43,7 +43,7 @@
             resize: none !important;
         }
         
-        /* 悬浮窗头部样式 */
+        /* Floating window header styles */
         .monitor-header {
             display: flex;
             justify-content: space-between;
@@ -86,7 +86,7 @@
             background-color: rgba(120, 120, 120, 0.9);
         }
         
-        /* 设置按钮样式 */
+        /* Settings button styles */
         .monitor-settings-btn {
             cursor: pointer;
             width: 18px;
@@ -104,7 +104,7 @@
             background-color: rgba(120, 120, 120, 0.9);
         }
         
-        /* 设置面板样式 */
+        /* Settings panel styles */
         .monitor-settings-panel {
             position: fixed;
             top: 50%;
@@ -288,7 +288,7 @@
             color: #ccc;
         }
         
-        /* 滚动条样式 */
+        /* Scrollbar styles */
         .monitor-settings-panel::-webkit-scrollbar {
             width: 8px;
         }
@@ -307,7 +307,7 @@
             background: rgba(255, 255, 255, 0.5);
         }
         
-        /* 文件输入优化 */
+        /* File input optimization */
         .settings-file-input::-webkit-file-upload-button {
             background-color: #4CAF50;
             color: white;
@@ -322,7 +322,7 @@
             background-color: #45a049;
         }
         
-        /* 动画效果 */
+        /* Animation effects */
         .monitor-settings-panel {
             animation: fadeIn 0.3s ease-out;
         }
@@ -338,7 +338,7 @@
             }
         }
         
-        /* 响应式设计 */
+        /* Responsive design */
         @media (max-width: 500px) {
             .monitor-settings-panel {
                 width: 90%;
@@ -346,12 +346,12 @@
             }
         }
         
-        /* 悬浮窗内容区 */
+        /* Floating window content area */
         .monitor-content {
             padding: 5px;
         }
         
-        /* 透明度控制 */
+        /* Opacity control */
         .monitor-opacity-high {
             opacity: 1;
             transition: opacity 0.2s;
@@ -362,7 +362,7 @@
             transition: opacity 0.2s;
         }
         
-        /* 分隔线 */
+        /* Divider */
         .monitor-divider {
             height: 1px;
             background: rgba(255, 255, 255, 0.2);
@@ -370,7 +370,7 @@
             width: 100%;
         }
         
-        /* 清理按钮 */
+        /* Cleanup button */
         .monitor-cleanup-button {
             display: flex;
             align-items: center;
@@ -428,7 +428,7 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
         }
         
-        /* 给不同类型的监控项添加不同的背景色 */
+        /* Add different background colors for different types of monitor items */
         .system-group .monitor-item {
             background-color: rgba(0, 0, 0, 0.3);
         }
@@ -483,7 +483,7 @@
         .vram-progress { background-color: rgba(156, 39, 176, 0.8); }
         .temp-progress { background-color: rgba(244, 67, 54, 0.8); }
         
-        /* 调整大小控制柄样式 */
+        /* Resize handle styles */
         .resize-handle {
             position: absolute;
             width: 15px;
@@ -512,11 +512,11 @@
     `;
     document.head.appendChild(styleSheet);
     
-    // 创建悬浮窗
+    // Create floating window
     setupHardwareMonitorFloating();
 })();
 
-// 格式化字节数为可读格式
+// Format bytes to readable format
 function formatBytes(bytes) {
     if (bytes === 0) return '0B';
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -524,96 +524,96 @@ function formatBytes(bytes) {
     return `${(bytes / Math.pow(1024, i)).toFixed(1)}${sizes[i]}`;
 }
 
-// 创建悬浮窗监控器
+// Create floating window monitor
 function setupHardwareMonitorFloating() {
     
-    // 创建悬浮窗容器
+    // Create floating window container
     const floatContainer = document.createElement('div');
     floatContainer.className = 'hardware-monitor-float monitor-opacity-high';
     floatContainer.id = 'hardware-monitor-float';
     
-    // 创建悬浮窗头部
+    // Create floating window header
     const header = document.createElement('div');
     header.className = 'monitor-header';
     
-    // 头部标题
+    // Header title
     const title = document.createElement('div');
     title.className = 'monitor-header-title';
-    title.textContent = '系统监控';
+    title.textContent = 'System Monitor';
     header.appendChild(title);
     
-    // 头部控制按钮
+    // Header control buttons
     const controls = document.createElement('div');
     controls.className = 'monitor-header-controls';
     
-    // 设置按钮
+    // Settings button
     const settingsBtn = document.createElement('div');
     settingsBtn.className = 'monitor-settings-btn';
     settingsBtn.innerHTML = '⚙';
-    settingsBtn.title = '设置';
+    settingsBtn.title = 'Settings';
     controls.appendChild(settingsBtn);
     
-    // 透明度切换按钮
+    // Opacity toggle button
     const opacityBtn = document.createElement('div');
     opacityBtn.className = 'monitor-control-btn';
     opacityBtn.innerHTML = '⊙';
-    opacityBtn.title = '切换透明度';
+    opacityBtn.title = 'Toggle Opacity';
     controls.appendChild(opacityBtn);
     
-    // 添加折叠/展开按钮
+    // Add collapse/expand button
     const collapseBtn = document.createElement('div');
     collapseBtn.className = 'monitor-control-btn';
     collapseBtn.innerHTML = '−';
-    collapseBtn.title = '折叠/展开';
+    collapseBtn.title = 'Collapse/Expand';
     controls.appendChild(collapseBtn);
     
     header.appendChild(controls);
     floatContainer.appendChild(header);
     
-    // 创建内容区域
+    // Create content area
     const content = document.createElement('div');
     content.className = 'monitor-content';
     floatContainer.appendChild(content);
     
-    // 创建硬件监控容器
+    // Create hardware monitor container
     const monitorContainer = document.createElement('div');
     monitorContainer.className = 'hardware-monitor-container';
     content.appendChild(monitorContainer);
     
-    // 创建系统资源组（CPU/RAM）
+    // Create system resources group (CPU/RAM)
     const systemGroup = document.createElement('div');
     systemGroup.className = 'monitor-group system-group';
     
-    // 添加系统组标题
+    // Add system group title
     const systemTitle = document.createElement('div');
     systemTitle.className = 'monitor-group-title';
-    systemTitle.textContent = '系统资源';
+    systemTitle.textContent = 'System Resources';
     systemGroup.appendChild(systemTitle);
     
     monitorContainer.appendChild(systemGroup);
     
-    // 初始化显示的信息
+    // Initialize displayed information
     const cpuElement = createMonitorElement('CPU', '0%', 'cpu-progress');
-    const ramElement = createMonitorElement('内存', '0%', 'ram-progress');
+    const ramElement = createMonitorElement('Memory', '0%', 'ram-progress');
     
-    // 添加到系统资源组
+    // Add to system resources group
     systemGroup.appendChild(cpuElement.container);
     systemGroup.appendChild(ramElement.container);
     
-    // 创建GPU分隔线占位符（只创建一次）
+    // Create GPU divider placeholder (create only once)
     const gpuDivider = document.createElement('div');
     gpuDivider.className = 'monitor-divider';
     gpuDivider.id = 'gpu-divider';
-    gpuDivider.style.display = 'none'; // 初始隐藏
+    gpuDivider.style.display = 'none'; // Initially hidden
     monitorContainer.appendChild(gpuDivider);
     
-    // 添加自动清理按钮
+    // Add auto cleanup button
     const cleanupButton = document.createElement('div');
     cleanupButton.className = 'monitor-cleanup-button';
     
     const cleanupText = document.createElement('span');
     cleanupText.className = 'cleanup-text';
-    cleanupText.textContent = '自动清理显存';
+    cleanupText.textContent = 'Auto Clear VRAM';
     cleanupButton.appendChild(cleanupText);
     
     const indicator = document.createElement('div');
@@ -622,7 +622,7 @@ function setupHardwareMonitorFloating() {
     
     monitorContainer.appendChild(cleanupButton);
     
-    // 添加调整大小控制柄
+    // Add resize handles
     const resizeHandleBR = document.createElement('div');
     resizeHandleBR.className = 'resize-handle resize-handle-br';
     floatContainer.appendChild(resizeHandleBR);
@@ -631,10 +631,10 @@ function setupHardwareMonitorFloating() {
     resizeHandleBL.className = 'resize-handle resize-handle-bl';
     floatContainer.appendChild(resizeHandleBL);
     
-    // 添加到页面
+    // Add to page
     document.body.appendChild(floatContainer);
     
-    // 创建提示工具提示
+    // Create tooltip
     const tooltip = document.createElement('div');
     tooltip.style.position = 'absolute';
     tooltip.style.display = 'none';
@@ -646,10 +646,10 @@ function setupHardwareMonitorFloating() {
     tooltip.style.zIndex = '1001';
     tooltip.style.pointerEvents = 'none';
     tooltip.style.whiteSpace = 'nowrap';
-    tooltip.textContent = '最近清理时间: 无';
+    tooltip.textContent = 'Last Cleanup Time: None';
     document.body.appendChild(tooltip);
     
-    // 鼠标悬停显示提示
+    // Show tooltip on mouse hover
     cleanupButton.addEventListener('mouseenter', (e) => {
         tooltip.style.display = 'block';
         updateTooltipPosition(e);
@@ -661,22 +661,22 @@ function setupHardwareMonitorFloating() {
         tooltip.style.display = 'none';
     });
     
-    // 更新提示位置
+    // Update tooltip position
     function updateTooltipPosition(e) {
         const rect = cleanupButton.getBoundingClientRect();
         tooltip.style.left = `${rect.left}px`;
         tooltip.style.top = `${rect.bottom + 5}px`;
     }
     
-    // 初始化自动清理变量
+    // Initialize auto cleanup variables
     let isActive = false;
     let intervalId = null;
     let lastCleanupTime = null;
     
-    // 配置变量
+    // Configuration variables
     let config = {
         opacity: 0.8,
-        progressColor: '#4CAF50', // 保留作为默认颜色
+        progressColor: '#4CAF50', // Keep as default color
         backgroundColor: 'rgba(30, 30, 30, 0.7)',
         backgroundImage: null,
         backgroundImageOpacity: 0.8,
@@ -688,10 +688,10 @@ function setupHardwareMonitorFloating() {
             temp: '#E91E63',
             vram: '#9C27B0'
         },
-        cleanupInterval: 1 // 默认1秒清理一次
+        cleanupInterval: 1 // Default 1 second cleanup interval
     };
     
-    // 创建设置面板
+    // Create settings panel
     function createSettingsPanel() {
         const panel = document.createElement('div');
         panel.className = 'monitor-settings-panel';
@@ -700,71 +700,71 @@ function setupHardwareMonitorFloating() {
         
         panel.innerHTML = `
             <div class="settings-panel-header">
-                <div class="settings-panel-title">硬件监控设置</div>
+                <div class="settings-panel-title">Hardware Monitor Settings</div>
                 <div class="settings-close-btn">×</div>
             </div>
             
             <div class="settings-group">
-                <div class="settings-group-title">外观设置</div>
+                <div class="settings-group-title">Appearance Settings</div>
                 
                 <div class="settings-item">
-                    <label class="settings-item-label">透明度: <span class="settings-value-display" id="opacity-value">${Math.round(config.opacity * 100)}%</span></label>
+                    <label class="settings-item-label">Opacity: <span class="settings-value-display" id="opacity-value">${Math.round(config.opacity * 100)}%</span></label>
                     <input type="range" class="settings-slider" id="opacity-slider" min="0.1" max="1" step="0.1" value="${config.opacity}">
                 </div>
                 
                 <div class="settings-item">
-                    <label class="settings-item-label">背景图片:</label>
+                    <label class="settings-item-label">Background Image:</label>
                     <input type="file" class="settings-file-input" id="background-image" accept="image/*">
-                    <button class="settings-button secondary" id="remove-background">移除背景</button>
+                    <button class="settings-button secondary" id="remove-background">Remove Background</button>
                 </div>
                 
                 <div class="settings-item">
-                    <label class="settings-item-label">背景图片透明度: <span class="settings-value-display" id="bg-opacity-value">${Math.round(config.backgroundImageOpacity * 100)}%</span></label>
+                    <label class="settings-item-label">Background Image Opacity: <span class="settings-value-display" id="bg-opacity-value">${Math.round(config.backgroundImageOpacity * 100)}%</span></label>
                     <input type="range" class="settings-slider" id="bg-opacity-slider" min="0.1" max="1" step="0.1" value="${config.backgroundImageOpacity}">
                 </div>
             </div>
             
             <div class="settings-group">
-                <div class="settings-group-title">监控条颜色设置</div>
+                <div class="settings-group-title">Progress Bar Colors</div>
                 
                 <div class="settings-item">
-                    <label class="settings-item-label">CPU 使用率:</label>
+                    <label class="settings-item-label">CPU Usage:</label>
                     <input type="color" class="settings-color-input individual-color" id="cpu-color" value="${config.individualColors.cpu}" data-type="cpu">
                 </div>
                 
                 <div class="settings-item">
-                    <label class="settings-item-label">内存使用率:</label>
+                    <label class="settings-item-label">Memory Usage:</label>
                     <input type="color" class="settings-color-input individual-color" id="ram-color" value="${config.individualColors.ram}" data-type="ram">
                 </div>
                 
                 <div class="settings-item">
-                    <label class="settings-item-label">GPU 使用率:</label>
+                    <label class="settings-item-label">GPU Usage:</label>
                     <input type="color" class="settings-color-input individual-color" id="gpu-color" value="${config.individualColors.gpu}" data-type="gpu">
                 </div>
                 
                 <div class="settings-item">
-                    <label class="settings-item-label">GPU 温度:</label>
+                    <label class="settings-item-label">GPU Temperature:</label>
                     <input type="color" class="settings-color-input individual-color" id="temp-color" value="${config.individualColors.temp}" data-type="temp">
                 </div>
                 
                 <div class="settings-item">
-                    <label class="settings-item-label">显存使用率:</label>
+                    <label class="settings-item-label">VRAM Usage:</label>
                     <input type="color" class="settings-color-input individual-color" id="vram-color" value="${config.individualColors.vram}" data-type="vram">
                 </div>
             </div>
             
             <div class="settings-group">
-                <div class="settings-group-title">自动清理设置</div>
+                <div class="settings-group-title">Auto Cleanup Settings</div>
                 
                 <div class="settings-item">
-                    <label class="settings-item-label">清理间隔（秒）: <span class="settings-value-display" id="cleanup-interval-value">${config.cleanupInterval}</span></label>
+                    <label class="settings-item-label">Cleanup Interval (seconds): <span class="settings-value-display" id="cleanup-interval-value">${config.cleanupInterval}</span></label>
                     <input type="range" class="settings-slider" id="cleanup-interval-slider" min="1" max="300" step="1" value="${config.cleanupInterval}">
                 </div>
             </div>
             
             <div class="settings-group">
-                <div class="settings-group-title">快速配色</div>
-                <div style="font-size: 11px; color: #aaa; margin-bottom: 10px;">点击颜色块应用到最后选择的监控条</div>
+                <div class="settings-group-title">Quick Colors</div>
+                <div style="font-size: 11px; color: #aaa; margin-bottom: 10px;">Click a color block to apply to the last selected progress bar</div>
                 <div id="color-presets">
                     <div class="color-preset" style="background-color: #4CAF50" data-color="#4CAF50"></div>
                     <div class="color-preset" style="background-color: #2196F3" data-color="#2196F3"></div>
@@ -778,27 +778,27 @@ function setupHardwareMonitorFloating() {
             </div>
             
             <div class="settings-group">
-                <div class="settings-group-title">历史配色</div>
+                <div class="settings-group-title">Color History</div>
                 <div class="history-colors" id="history-colors"></div>
-                <button class="settings-button secondary" id="clear-history">清除历史</button>
+                <button class="settings-button secondary" id="clear-history">Clear History</button>
             </div>
             
             <div class="settings-group">
-                <div class="settings-group-title">配置管理</div>
-                <button class="settings-button" id="save-config">保存配置</button>
-                <button class="settings-button secondary" id="reset-config">重置为默认</button>
+                <div class="settings-group-title">Configuration Management</div>
+                <button class="settings-button" id="save-config">Save Configuration</button>
+                <button class="settings-button secondary" id="reset-config">Reset to Default</button>
             </div>
         `;
         
         document.body.appendChild(panel);
         
-        // 绑定事件
+        // Bind events
         bindSettingsEvents(panel);
         
         return panel;
     }
     
-    // 绑定设置面板事件
+    // Bind settings panel events
     function bindSettingsEvents(panel) {
         const closeBtn = panel.querySelector('.settings-close-btn');
         const opacitySlider = panel.querySelector('#opacity-slider');
@@ -815,26 +815,26 @@ function setupHardwareMonitorFloating() {
         const cleanupIntervalSlider = panel.querySelector('#cleanup-interval-slider');
         const cleanupIntervalValue = panel.querySelector('#cleanup-interval-value');
         
-        // 关闭面板
+        // Close panel
         closeBtn.addEventListener('click', () => {
             panel.style.display = 'none';
         });
         
-        // 点击面板外部关闭面板
+        // Close panel when clicking outside
         panel.addEventListener('click', (e) => {
             if (e.target === panel) {
                 panel.style.display = 'none';
             }
         });
         
-        // ESC键关闭面板
+        // ESC key to close panel
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && panel.style.display === 'block') {
                 panel.style.display = 'none';
             }
         });
         
-        // 透明度调整
+        // Opacity adjustment
         opacitySlider.addEventListener('input', (e) => {
             config.opacity = parseFloat(e.target.value);
             opacityValue.textContent = Math.round(config.opacity * 100) + '%';
@@ -842,7 +842,7 @@ function setupHardwareMonitorFloating() {
             saveConfig();
         });
         
-        // 背景图片透明度调整
+        // Background image opacity adjustment
         bgOpacitySlider.addEventListener('input', (e) => {
             config.backgroundImageOpacity = parseFloat(e.target.value);
             bgOpacityValue.textContent = Math.round(config.backgroundImageOpacity * 100) + '%';
@@ -850,12 +850,12 @@ function setupHardwareMonitorFloating() {
             saveConfig();
         });
         
-        // 清理间隔调整
+        // Cleanup interval adjustment
         cleanupIntervalSlider.addEventListener('input', (e) => {
             config.cleanupInterval = parseInt(e.target.value);
             cleanupIntervalValue.textContent = config.cleanupInterval;
             
-            // 如果自动清理正在运行，重新启动以应用新的间隔
+            // If auto cleanup is running, restart to apply new interval
             if (isActive) {
                 if (intervalId) {
                     clearInterval(intervalId);
@@ -866,7 +866,7 @@ function setupHardwareMonitorFloating() {
             saveConfig();
         });
         
-        // 单独颜色调整
+        // Individual color adjustment
         individualColorInputs.forEach(input => {
             input.addEventListener('change', (e) => {
                 const type = e.target.dataset.type;
@@ -878,7 +878,7 @@ function setupHardwareMonitorFloating() {
             });
         });
         
-        // 背景图片上传
+        // Background image upload
         backgroundImageInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -892,7 +892,7 @@ function setupHardwareMonitorFloating() {
             }
         });
         
-        // 移除背景
+        // Remove background
         removeBackgroundBtn.addEventListener('click', () => {
             config.backgroundImage = null;
             applyBackgroundImage();
@@ -900,7 +900,7 @@ function setupHardwareMonitorFloating() {
             saveConfig();
         });
         
-        // 预设颜色选择 - 应用到最后点击的颜色输入框
+        // Preset color selection - apply to last clicked color input
         let lastClickedColorInput = null;
         
         individualColorInputs.forEach(input => {
@@ -913,14 +913,14 @@ function setupHardwareMonitorFloating() {
             preset.addEventListener('click', () => {
                 const color = preset.dataset.color;
                 
-                // 如果有最后点击的颜色输入框，则应用到该输入框
+                // If there's a last clicked color input, apply to that input
                 if (lastClickedColorInput) {
                     const type = lastClickedColorInput.dataset.type;
                     config.individualColors[type] = color;
                     lastClickedColorInput.value = color;
                     applyIndividualColor(type, color);
                 } else {
-                    // 默认应用到CPU颜色
+                    // Default apply to CPU color
                     config.individualColors.cpu = color;
                     panel.querySelector('#cpu-color').value = color;
                     applyIndividualColor('cpu', color);
@@ -929,29 +929,29 @@ function setupHardwareMonitorFloating() {
                 addToColorHistory(color);
                 saveConfig();
                 
-                // 更新选中状态
+                // Update selected state
                 colorPresets.forEach(p => p.classList.remove('selected'));
                 preset.classList.add('selected');
             });
         });
         
-        // 保存配置
+        // Save configuration
         saveConfigBtn.addEventListener('click', () => {
             saveConfig();
-            alert('配置已保存！');
+            alert('Configuration saved!');
         });
         
-        // 重置配置
+        // Reset configuration
         resetConfigBtn.addEventListener('click', () => {
-            if (confirm('确定要重置为默认配置吗？')) {
+            if (confirm('Are you sure you want to reset to default configuration?')) {
                 resetConfig();
                 updateSettingsPanel();
             }
         });
         
-        // 清除历史
+        // Clear history
         clearHistoryBtn.addEventListener('click', () => {
-            if (confirm('确定要清除颜色历史吗？')) {
+            if (confirm('Are you sure you want to clear color history?')) {
                 config.colorHistory = ['#4CAF50', '#2196F3', '#FF9800', '#E91E63', '#9C27B0'];
                 updateHistoryColors();
                 saveConfig();
@@ -959,12 +959,12 @@ function setupHardwareMonitorFloating() {
         });
     }
     
-    // 应用透明度
+    // Apply opacity
     function applyOpacity() {
         floatContainer.style.opacity = config.opacity;
     }
     
-    // 应用单独的进度条颜色
+    // Apply individual progress bar color
     function applyIndividualColor(type, color) {
         let selector = '';
         switch(type) {
@@ -993,23 +993,23 @@ function setupHardwareMonitorFloating() {
         }
     }
     
-    // 应用所有进度条颜色
+    // Apply all progress bar colors
     function applyAllProgressColors() {
         Object.keys(config.individualColors).forEach(type => {
             applyIndividualColor(type, config.individualColors[type]);
         });
     }
     
-    // 应用背景图片
+    // Apply background image
     function applyBackgroundImage() {
         const container = floatContainer.querySelector('.hardware-monitor-container');
         if (config.backgroundImage) {
             container.style.backgroundImage = `url(${config.backgroundImage})`;
-            // 根据背景图片透明度设置背景色
+            // Set background color based on background image opacity
             const alpha = 1 - config.backgroundImageOpacity;
             container.style.backgroundColor = `rgba(30, 30, 30, ${alpha})`;
             
-            // 如果有背景图片，添加一个半透明覆盖层来控制图片透明度
+            // If there's a background image, add a semi-transparent overlay to control image opacity
             let overlay = container.querySelector('.bg-overlay');
             if (!overlay) {
                 overlay = document.createElement('div');
@@ -1029,7 +1029,7 @@ function setupHardwareMonitorFloating() {
         } else {
             container.style.backgroundImage = 'none';
             container.style.backgroundColor = config.backgroundColor;
-            // 移除覆盖层
+            // Remove overlay
             const overlay = container.querySelector('.bg-overlay');
             if (overlay) {
                 overlay.remove();
@@ -1037,7 +1037,7 @@ function setupHardwareMonitorFloating() {
         }
     }
     
-    // 颜色亮度调整函数
+    // Color brightness adjustment function
     function adjustColorBrightness(color, amount) {
         const num = parseInt(color.replace("#", ""), 16);
         const amt = Math.round(2.55 * amount);
@@ -1049,7 +1049,7 @@ function setupHardwareMonitorFloating() {
             .toString(16).slice(1);
     }
     
-    // 添加到颜色历史
+    // Add to color history
     function addToColorHistory(color) {
         if (!config.colorHistory.includes(color)) {
             config.colorHistory.unshift(color);
@@ -1060,7 +1060,7 @@ function setupHardwareMonitorFloating() {
         }
     }
     
-    // 更新历史颜色显示
+    // Update history colors display
     function updateHistoryColors() {
         const historyContainer = document.querySelector('#history-colors');
         if (historyContainer) {
@@ -1071,14 +1071,14 @@ function setupHardwareMonitorFloating() {
                 colorDiv.style.backgroundColor = color;
                 colorDiv.dataset.color = color;
                 colorDiv.addEventListener('click', () => {
-                    // 应用到最后点击的颜色输入框
+                    // Apply to last clicked color input
                     if (lastClickedColorInput) {
                         const type = lastClickedColorInput.dataset.type;
                         config.individualColors[type] = color;
                         lastClickedColorInput.value = color;
                         applyIndividualColor(type, color);
                     } else {
-                        // 默认应用到CPU颜色
+                        // Default apply to CPU color
                         config.individualColors.cpu = color;
                         const cpuInput = document.querySelector('#cpu-color');
                         if (cpuInput) {
@@ -1093,7 +1093,7 @@ function setupHardwareMonitorFloating() {
         }
     }
     
-    // 更新设置面板
+    // Update settings panel
     function updateSettingsPanel() {
         const panel = document.querySelector('#monitor-settings-panel');
         if (panel) {
@@ -1104,7 +1104,7 @@ function setupHardwareMonitorFloating() {
             panel.querySelector('#cleanup-interval-slider').value = config.cleanupInterval;
             panel.querySelector('#cleanup-interval-value').textContent = config.cleanupInterval;
             
-            // 更新单独颜色输入框
+            // Update individual color inputs
             Object.keys(config.individualColors).forEach(type => {
                 const input = panel.querySelector(`#${type}-color`);
                 if (input) {
@@ -1116,48 +1116,48 @@ function setupHardwareMonitorFloating() {
         }
     }
     
-    // 保存配置
+    // Save configuration
     function saveConfig() {
         try {
             localStorage.setItem('hardwareMonitorConfig', JSON.stringify(config));
         } catch (e) {
-            // 静默处理错误
+            // Silently handle error
         }
     }
     
-    // 加载配置
+    // Load configuration
     function loadConfig() {
         try {
             const savedConfig = localStorage.getItem('hardwareMonitorConfig');
             if (savedConfig) {
                 const parsed = JSON.parse(savedConfig);
-                // 合并配置，确保新的配置项有默认值
+                // Merge configuration, ensure new config items have default values
                 config = { 
                     ...config, 
                     ...parsed,
-                    // 确保individualColors存在
+                    // Ensure individualColors exists
                     individualColors: {
                         ...config.individualColors,
                         ...parsed.individualColors
                     }
                 };
                 
-                // 确保backgroundImageOpacity存在
+                // Ensure backgroundImageOpacity exists
                 if (typeof config.backgroundImageOpacity === 'undefined') {
                     config.backgroundImageOpacity = 0.8;
                 }
                 
-                // 确保cleanupInterval存在
+                // Ensure cleanupInterval exists
                 if (typeof config.cleanupInterval === 'undefined') {
                     config.cleanupInterval = 1;
                 }
             }
         } catch (e) {
-            // 静默处理错误
+            // Silently handle error
         }
     }
     
-    // 重置配置
+    // Reset configuration
     function resetConfig() {
         config = {
             opacity: 0.8,
@@ -1181,33 +1181,33 @@ function setupHardwareMonitorFloating() {
         saveConfig();
     }
     
-    // 初始化设置
+    // Initialize settings
     loadConfig();
     const settingsPanel = createSettingsPanel();
     
-    // 设置按钮点击事件
+    // Settings button click event
     settingsBtn.addEventListener('click', () => {
         settingsPanel.style.display = settingsPanel.style.display === 'none' ? 'block' : 'none';
         updateSettingsPanel();
     });
     
-    // 从localStorage加载状态
+    // Load state from localStorage
     function loadState() {
         try {
             const savedState = localStorage.getItem('autoCleanupState');
             if (savedState !== null) {
                 isActive = JSON.parse(savedState);
                 
-                // 如果状态为活跃，启动清理
+                // If state is active, start cleanup
                 if (isActive) {
                     updateButtonState();
                 }
             }
         } catch (e) {
-            // 静默处理错误
+            // Silently handle error
         }
         
-        // 加载上次清理时间
+        // Load last cleanup time
         try {
             const savedTime = localStorage.getItem('autoCleanupLastTime');
             if (savedTime !== null) {
@@ -1215,51 +1215,51 @@ function setupHardwareMonitorFloating() {
                 updateTooltip();
             }
         } catch (e) {
-            // 静默处理错误
+            // Silently handle error
         }
     }
     
-    // 保存状态到localStorage
+    // Save state to localStorage
     function saveState() {
         try {
             localStorage.setItem('autoCleanupState', JSON.stringify(isActive));
         } catch (e) {
-            // 静默处理错误
+            // Silently handle error
         }
     }
     
-    // 保存上次清理时间
+    // Save last cleanup time
     function saveLastCleanupTime() {
         if (lastCleanupTime) {
             try {
                 localStorage.setItem('autoCleanupLastTime', lastCleanupTime.toISOString());
             } catch (e) {
-                // 静默处理错误
+                // Silently handle error
             }
         }
     }
     
-    // 添加清理按钮点击事件
+    // Add cleanup button click event
     cleanupButton.addEventListener('click', () => {
         isActive = !isActive;
         updateButtonState();
         saveState();
     });
     
-    // 更新按钮状态
+    // Update button state
     function updateButtonState() {
         if (isActive) {
-            indicator.style.backgroundColor = '#4CAF50'; // 绿色表示开启
+            indicator.style.backgroundColor = '#4CAF50'; // Green indicates on
             
-            // 启动定时清理
+            // Start scheduled cleanup
             if (!intervalId) {
-                performCleanup(); // 立即执行一次
-                intervalId = setInterval(performCleanup, config.cleanupInterval * 1000); // 使用配置的间隔
+                performCleanup(); // Execute once immediately
+                intervalId = setInterval(performCleanup, config.cleanupInterval * 1000); // Use configured interval
             }
         } else {
-            indicator.style.backgroundColor = '#888'; // 灰色表示关闭
+            indicator.style.backgroundColor = '#888'; // Gray indicates off
             
-            // 停止定时清理
+            // Stop scheduled cleanup
             if (intervalId) {
                 clearInterval(intervalId);
                 intervalId = null;
@@ -1267,14 +1267,14 @@ function setupHardwareMonitorFloating() {
         }
     }
     
-    // 执行清理操作
+    // Perform cleanup operation
     async function performCleanup() {
-        // 获取当前页面的主机地址
+        // Get current page host address
         const currentUrl = window.location.href;
         const url = new URL(currentUrl);
         const baseUrl = `${url.protocol}//${url.host}`;
         
-        // 构建API URL
+        // Build API URL
         const apiUrl = `${baseUrl}/api/free`;
         
         const params = {
@@ -1297,24 +1297,24 @@ function setupHardwareMonitorFloating() {
                 saveLastCleanupTime();
             }
         } catch (error) {
-            // 静默处理错误
+            // Silently handle error
         }
     }
     
-    // 更新提示信息
+    // Update tooltip information
     function updateTooltip() {
         if (lastCleanupTime) {
             const timeString = lastCleanupTime.toLocaleTimeString();
-            tooltip.textContent = `最近清理时间: ${timeString}`;
+            tooltip.textContent = `Last Cleanup Time: ${timeString}`;
         } else {
-            tooltip.textContent = "最近清理时间: 无";
+            tooltip.textContent = "Last Cleanup Time: None";
         }
     }
     
-    // 加载保存的状态
+    // Load saved state
     loadState();
     
-    // 设置拖动和调整大小相关变量
+    // Set drag and resize related variables
     let isDragging = false;
     let startX, startY;
     let startPosX, startPosY;
@@ -1323,10 +1323,10 @@ function setupHardwareMonitorFloating() {
     let startWidthBR, startFontScale;
     let startWidthBL, startRectLeft;
     
-    // 从localStorage加载位置和大小
+    // Load position and size from localStorage
     function loadPositionAndSize() {
         try {
-            // 延迟执行确保DOM完全加载和渲染
+            // Delay execution to ensure DOM is fully loaded and rendered
             setTimeout(() => {
                 const savedPosition = localStorage.getItem('hardware-monitor-position');
                 if (savedPosition) {
@@ -1338,19 +1338,19 @@ function setupHardwareMonitorFloating() {
                 const savedSize = localStorage.getItem('hardware-monitor-size');
                 if (savedSize) {
                     const size = JSON.parse(savedSize);
-                    // 确保使用像素单位
+                    // Ensure using pixel units
                     if (!size.width.endsWith('px')) {
                         size.width += 'px';
                     }
                     floatContainer.style.width = size.width;
                     
-                    // 更新所有子元素的字体大小
+                    // Update font size for all child elements
                     const fontScale = size.fontScale || 1;
-                    // 将当前的字体大小缩放比例保存到monitorElements中，供后续GPU项使用
+                    // Save current font scale to monitorElements for future GPU items
                     monitorElements.currentFontScale = fontScale;
                     updateFontSize(fontScale);
                     
-                    // 强制重新布局
+                    // Force re-layout
                     void floatContainer.offsetWidth;
                 }
             }, 100);
@@ -1359,7 +1359,7 @@ function setupHardwareMonitorFloating() {
         }
     }
     
-    // 保存位置和大小到localStorage
+    // Save position and size to localStorage
     function savePosition() {
         const position = {
             left: floatContainer.style.left,
@@ -1369,7 +1369,7 @@ function setupHardwareMonitorFloating() {
     }
     
     function saveSize() {
-        // 获取计算后的实际宽度，确保保存的是实际值
+        // Get computed actual width to ensure saving actual value
         const computedWidth = window.getComputedStyle(floatContainer).width;
         const size = {
             width: computedWidth,
@@ -1378,87 +1378,87 @@ function setupHardwareMonitorFloating() {
         localStorage.setItem('hardware-monitor-size', JSON.stringify(size));
     }
     
-    // 更新字体大小
+    // Update font size
     function updateFontSize(scale) {
         floatContainer.setAttribute('data-font-scale', scale);
         
-        // 标题
+        // Titles
         const titles = floatContainer.querySelectorAll('.monitor-group-title, .monitor-header-title');
         titles.forEach(el => {
             el.style.fontSize = `${13 * scale}px`;
         });
         
-        // 标签和值
+        // Labels and values
         const labels = floatContainer.querySelectorAll('.monitor-label, .monitor-value');
         labels.forEach(el => {
             el.style.fontSize = `${12 * scale}px`;
         });
         
-        // 按钮和指示器
+        // Buttons and indicators
         const buttons = floatContainer.querySelectorAll('.monitor-control-btn, .cleanup-text');
         buttons.forEach(el => {
             el.style.fontSize = `${12 * scale}px`;
         });
         
-        // 调整监控项高度
+        // Adjust monitor item height
         const items = floatContainer.querySelectorAll('.monitor-item');
         items.forEach(el => {
             el.style.height = `${26 * scale}px`;
         });
         
-        // 保存当前缩放比例到monitorElements
+        // Save current scale to monitorElements
         if (monitorElements) {
             monitorElements.currentFontScale = scale;
         }
     }
     
-    // 监听标题栏和内容区的拖动开始
+    // Listen for drag start on header and content area
     const dragHandlers = [header, content];
     dragHandlers.forEach(element => {
         element.addEventListener('mousedown', function(e) {
-            // 如果点击的是调整大小的控制柄或按钮，不进行拖动
+            // Don't drag if clicking resize handle or button
             if (e.target.closest('.resize-handle') || e.target.closest('.monitor-control-btn')) {
                 return;
             }
             
-            // 只处理左键点击
+            // Only handle left click
             if (e.button !== 0) return;
             
-            // 记录鼠标起始坐标
+            // Record mouse start coordinates
             startX = e.clientX;
             startY = e.clientY;
             
-            // 记录窗口起始位置
+            // Record window start position
             const rect = floatContainer.getBoundingClientRect();
             startPosX = rect.left;
             startPosY = rect.top;
             
-            // 开始拖动
+            // Start dragging
             isDragging = true;
             
-            // 添加临时样式
+            // Add temporary styles
             floatContainer.style.transition = 'none';
             element.style.cursor = 'grabbing';
             
-            // 阻止事件传播和默认行为
+            // Prevent event propagation and default behavior
             e.preventDefault();
             e.stopPropagation();
         });
     });
     
-    // 调整大小功能 - 右下角
+    // Resize functionality - bottom right corner
     resizeHandleBR.addEventListener('mousedown', function(e) {
         isResizingBR = true;
         startX = e.clientX;
         startWidthBR = parseInt(getComputedStyle(floatContainer).width, 10);
         startFontScale = parseFloat(floatContainer.getAttribute('data-font-scale') || '1');
         
-        // 阻止事件传播和默认行为
+        // Prevent event propagation and default behavior
         e.preventDefault();
         e.stopPropagation();
     });
     
-    // 调整大小功能 - 左下角
+    // Resize functionality - bottom left corner
     resizeHandleBL.addEventListener('mousedown', function(e) {
         isResizingBL = true;
         startX = e.clientX;
@@ -1466,102 +1466,102 @@ function setupHardwareMonitorFloating() {
         startRectLeft = floatContainer.getBoundingClientRect().left;
         startFontScale = parseFloat(floatContainer.getAttribute('data-font-scale') || '1');
         
-        // 阻止事件传播和默认行为
+        // Prevent event propagation and default behavior
         e.preventDefault();
         e.stopPropagation();
     });
     
-    // 在整个文档上监听鼠标移动
+    // Listen for mouse move on entire document
     document.addEventListener('mousemove', function(e) {
-        // 处理拖动
+        // Handle dragging
         if (isDragging) {
-            // 计算鼠标移动的距离
+            // Calculate mouse movement distance
             const deltaX = e.clientX - startX;
             const deltaY = e.clientY - startY;
             
-            // 计算新位置
+            // Calculate new position
             let newX = startPosX + deltaX;
             let newY = startPosY + deltaY;
             
-            // 限制在视窗内
+            // Limit within viewport
             const maxX = window.innerWidth - floatContainer.offsetWidth;
             const maxY = window.innerHeight - floatContainer.offsetHeight;
             
             newX = Math.max(0, Math.min(newX, maxX));
             newY = Math.max(0, Math.min(newY, maxY));
             
-            // 设置新位置
+            // Set new position
             floatContainer.style.left = newX + 'px';
             floatContainer.style.top = newY + 'px';
             
-            // 阻止默认行为
+            // Prevent default behavior
             e.preventDefault();
         }
         
-        // 处理右下角调整大小
+        // Handle bottom right resize
         if (isResizingBR) {
             const deltaX = e.clientX - startX;
             const newWidth = Math.max(200, Math.min(startWidthBR + deltaX, 500));
             floatContainer.style.width = newWidth + 'px';
             
-            // 等比例调整字体大小
+            // Scale font size proportionally
             const fontScale = startFontScale * (newWidth / startWidthBR);
             updateFontSize(fontScale);
             
-            // 阻止事件传播和默认行为
+            // Prevent event propagation and default behavior
             e.preventDefault();
         }
         
-        // 处理左下角调整大小
+        // Handle bottom left resize
         if (isResizingBL) {
             const deltaX = startX - e.clientX;
             const newWidth = Math.max(200, Math.min(startWidthBL + deltaX, 500));
             
-            // 调整宽度
+            // Adjust width
             floatContainer.style.width = newWidth + 'px';
             
-            // 移动位置以保持右边不变
+            // Move position to keep right side fixed
             const newLeft = startRectLeft - (newWidth - startWidthBL);
             if (newLeft >= 0) {
                 floatContainer.style.left = newLeft + 'px';
             }
             
-            // 等比例调整字体大小
+            // Scale font size proportionally
             const fontScale = startFontScale * (newWidth / startWidthBL);
             updateFontSize(fontScale);
             
-            // 阻止事件传播和默认行为
+            // Prevent event propagation and default behavior
             e.preventDefault();
         }
     });
     
-    // 在整个文档上监听鼠标释放
+    // Listen for mouse release on entire document
     document.addEventListener('mouseup', function(e) {
-        // 处理拖动结束
+        // Handle drag end
         if (isDragging) {
             isDragging = false;
             
-            // 恢复样式
+            // Restore styles
             floatContainer.style.transition = '';
             dragHandlers.forEach(element => {
                 element.style.cursor = 'move';
             });
             
-            // 保存位置
+            // Save position
             savePosition();
         }
         
-        // 处理调整大小结束
+        // Handle resize end
         if (isResizingBR || isResizingBL) {
             isResizingBR = false;
             isResizingBL = false;
             
-            // 保存大小
+            // Save size
             saveSize();
         }
     });
     
-    // 添加避免拖出窗口的保护措施
+    // Add protection to avoid dragging out of window
     document.addEventListener('mouseleave', function() {
         if (isDragging) {
             isDragging = false;
@@ -1579,35 +1579,35 @@ function setupHardwareMonitorFloating() {
         }
     });
     
-    // 监听窗口大小变化，确保悬浮窗可见
+    // Listen for window resize to ensure floating window is visible
     window.addEventListener('resize', function() {
-        // 获取当前位置
+        // Get current position
         const rect = floatContainer.getBoundingClientRect();
         
-        // 检查悬浮窗是否部分超出视窗
+        // Check if floating window partially exceeds viewport
         if (rect.right > window.innerWidth) {
-            // 如果右边超出，重新定位到右边界
+            // If right side exceeds, reposition to right boundary
             floatContainer.style.left = (window.innerWidth - rect.width) + 'px';
         }
         
         if (rect.bottom > window.innerHeight) {
-            // 如果底部超出，重新定位到底部边界
+            // If bottom exceeds, reposition to bottom boundary
             floatContainer.style.top = (window.innerHeight - rect.height) + 'px';
         }
         
-        // 保存新位置
+        // Save new position
         savePosition();
     });
     
-    // 确保悬浮窗被点击时始终在最前面
+    // Ensure floating window is always on top when clicked
     floatContainer.addEventListener('mousedown', function() {
         this.style.zIndex = '1001';
     });
     
-    // 调用加载位置和大小函数
+    // Call load position and size function
     loadPositionAndSize();
     
-    // 存储活跃GPU索引和监控元素
+    // Store active GPU indices and monitor elements
     const monitorElements = {
         container: monitorContainer,
         systemGroup: systemGroup,
@@ -1622,22 +1622,22 @@ function setupHardwareMonitorFloating() {
         gpuDevices: {},
         lastGpuIds: [],
         currentFontScale: 1,
-        hasGpuDivider: false // 添加标记，防止重复添加分隔线
+        hasGpuDivider: false // Add flag to prevent duplicate dividers
     };
     
-    // 获取活跃GPU信息
+    // Get active GPU information
     fetchSystemStats(monitorElements);
     
-    // 设置WebSocket监听
+    // Set up WebSocket listener
     setupWebSocketListener(monitorElements);
     
-    // 透明度切换
+    // Opacity toggle
     opacityBtn.addEventListener('click', function() {
         floatContainer.classList.toggle('monitor-opacity-low');
         floatContainer.classList.toggle('monitor-opacity-high');
     });
     
-    // 折叠/展开功能
+    // Collapse/expand functionality
     let isCollapsed = false;
     collapseBtn.addEventListener('click', function() {
         isCollapsed = !isCollapsed;
@@ -1645,7 +1645,7 @@ function setupHardwareMonitorFloating() {
         collapseBtn.innerHTML = isCollapsed ? '+' : '−';
     });
     
-    // 应用初始配置
+    // Apply initial configuration
     setTimeout(() => {
         applyOpacity();
         applyAllProgressColors();
@@ -1654,7 +1654,7 @@ function setupHardwareMonitorFloating() {
     }, 100);
 }
 
-// 创建监控元素
+// Create monitor element
 function createMonitorElement(label, value, progressClass) {
     const container = document.createElement('div');
     container.className = 'monitor-item';
@@ -1669,7 +1669,7 @@ function createMonitorElement(label, value, progressClass) {
     const progressEl = document.createElement('div');
     progressEl.className = `monitor-progress ${progressClass || ''}`;
     
-    // 应用当前配置的进度条颜色
+    // Apply currently configured progress bar color
     const savedConfig = localStorage.getItem('hardwareMonitorConfig');
     if (savedConfig) {
         try {
@@ -1685,8 +1685,8 @@ function createMonitorElement(label, value, progressClass) {
                     .toString(16).slice(1);
             };
             
-            // 根据progressClass确定使用哪个颜色
-            let color = config.progressColor; // 默认颜色
+            // Determine which color to use based on progressClass
+            let color = config.progressColor; // Default color
             if (config.individualColors) {
                 if (progressClass.includes('cpu')) {
                     color = config.individualColors.cpu;
@@ -1703,7 +1703,7 @@ function createMonitorElement(label, value, progressClass) {
             
             progressEl.style.background = `linear-gradient(90deg, ${color} 0%, ${adjustColorBrightness(color, -20)} 100%)`;
         } catch (e) {
-            // 如果解析失败，使用默认颜色
+            // Use default color if parsing fails
         }
     }
     
@@ -1717,40 +1717,40 @@ function createMonitorElement(label, value, progressClass) {
     container.appendChild(labelEl);
     container.appendChild(valueEl);
     
-    // 根据百分比获取告警颜色和样式
+    // Get warning color and style based on percentage
     function getWarningStyle(percent, element) {
         if (percent >= 80) {
-            // 高负载红色告警
-            element.style.color = '#ff4d4f';  // 鲜红色
+            // High load red warning
+            element.style.color = '#ff4d4f';  // Bright red
             element.style.textShadow = '0 0 2px rgba(0, 0, 0, 0.9), 0 0 4px rgba(255, 77, 79, 0.8)';
             element.style.fontWeight = 'bold';
         } else if (percent >= 60) {
-            // 中负载黄色警告
-            element.style.color = '#fadb14';  // 亮黄色，比之前的更亮
+            // Medium load yellow warning
+            element.style.color = '#fadb14';  // Bright yellow, brighter than before
             element.style.textShadow = '0 0 2px rgba(0, 0, 0, 0.9), 0 0 4px rgba(250, 219, 20, 0.8)';
             element.style.fontWeight = 'bold';
         } else {
-            // 正常状态
+            // Normal state
             element.style.color = '#fff';
             element.style.textShadow = '0 0 2px rgba(0, 0, 0, 0.8)';
             element.style.fontWeight = 'normal';
         }
     }
     
-    // 温度告警样式
+    // Temperature warning style
     function getTempWarningStyle(temp, element) {
         if (temp >= 85) {
-            // 高温红色告警
-            element.style.color = '#ff4d4f';  // 鲜红色
+            // High temperature red warning
+            element.style.color = '#ff4d4f';  // Bright red
             element.style.textShadow = '0 0 2px rgba(0, 0, 0, 0.9), 0 0 4px rgba(255, 77, 79, 0.8)';
             element.style.fontWeight = 'bold';
         } else if (temp >= 75) {
-            // 中温黄色警告
-            element.style.color = '#fadb14';  // 亮黄色，比之前的更亮
+            // Medium temperature yellow warning
+            element.style.color = '#fadb14';  // Bright yellow, brighter than before
             element.style.textShadow = '0 0 2px rgba(0, 0, 0, 0.9), 0 0 4px rgba(250, 219, 20, 0.8)';
             element.style.fontWeight = 'bold';
         } else {
-            // 正常温度
+            // Normal temperature
             element.style.color = '#fff';
             element.style.textShadow = '0 0 2px rgba(0, 0, 0, 0.8)';
             element.style.fontWeight = 'normal';
@@ -1769,34 +1769,34 @@ function createMonitorElement(label, value, progressClass) {
             if (percent !== undefined) {
                 this.progress.style.width = `${percent}%`;
                 
-                // 添加告警颜色
-                if (!label.includes('温度') && !label.includes('T')) {
-                    // 对于CPU、内存和GPU负载，根据百分比设置颜色
+                // Add warning color
+                if (!label.includes('Temp') && !label.includes('T')) {
+                    // For CPU, memory and GPU load, set color based on percentage
                     getWarningStyle(percent, this.value);
                     getWarningStyle(percent, this.label);
                 }
             }
             
-            // 特别处理显存显示
-            if (label.includes('显存')) {
+            // Special handling for VRAM display
+            if (label.includes('VRAM')) {
                 if (used !== undefined && total !== undefined) {
-                    // 显示实际使用量 (如 "8.2GB/12.0GB")
+                    // Display actual usage (e.g. "8.2GB/12.0GB")
                     const usedStr = formatBytes(used);
                     const totalStr = formatBytes(total);
                     this.value.textContent = `${usedStr}/${totalStr}`;
 
-                    // 保留进度条百分比
+                    // Keep progress bar percentage
                     this.progress.style.width = `${percent}%`;
 
-                    // 设置tooltip显示百分比
+                    // Set tooltip to show percentage
                     this.container.title = `${label}: ${percent}% (${usedStr}/${totalStr})`;
 
-                    // 添加告警颜色
+                    // Add warning color
                     getWarningStyle(percent, this.value);
                     getWarningStyle(percent, this.label);
                 }
             }
-            // 其他监控项保持原样
+            // Keep other monitor items as is
             else {
                 this.value.textContent = newValue;
                 if (percent !== undefined) {
@@ -1805,15 +1805,15 @@ function createMonitorElement(label, value, progressClass) {
                     getWarningStyle(percent, this.label);
                 }
             }
-            // 温度特殊处理 - 颜色随温度变化
-            if (label.includes('T') || label.includes('温度')) {
+            // Temperature special handling - color changes with temperature
+            if (label.includes('T') || label.includes('Temp')) {
                 const tempValue = parseFloat(newValue);
                 
-                // 颜色从绿色渐变到红色，60度以下绿色，90度以上红色
+                // Color gradient from green to red, green below 60°, red above 90°
                 const hue = Math.max(0, 120 - (tempValue - 60) * 2);
                 this.progress.style.backgroundColor = `hsla(${hue}, 80%, 50%, 0.7)`;
                 
-                // 温度文字颜色也随温度变化
+                // Temperature text color also changes with temperature
                 getTempWarningStyle(tempValue, this.value);
                 getTempWarningStyle(tempValue, this.label);
             }
@@ -1821,46 +1821,46 @@ function createMonitorElement(label, value, progressClass) {
     };
 }
 
-// 设置WebSocket监听
+// Set up WebSocket listener
 function setupWebSocketListener(monitorElements) {
-    // 监听已有的WebSocket连接
+    // Listen to existing WebSocket connections
     const originalWebSocket = window.WebSocket;
     window.WebSocket = function(url, protocols) {
         const socket = new originalWebSocket(url, protocols);
         
-        // 监听消息
+        // Listen for messages
         socket.addEventListener('message', function(event) {
             try {
                 const message = JSON.parse(event.data);
                 
-                // 监控器数据 - 支持多种数据类型
+                // Monitor data - support multiple data types
                 if (message.type === "crystools.monitor" || message.type === "hardware.monitor") {
                     updateMonitorUI(monitorElements, message.data);
                 }
             } catch (error) {
-                // 忽略非JSON消息
+                // Ignore non-JSON messages
             }
         });
         
         return socket;
     };
     
-    // 对于已有的WebSocket连接
+    // For existing WebSocket connections
     if (window.app && window.app.socketio) {
         const originalOnMessage = window.app.socketio.onmessage;
         window.app.socketio.onmessage = function(event) {
             try {
                 const message = JSON.parse(event.data);
                 
-                // 监控器数据 - 支持多种数据类型
+                // Monitor data - support multiple data types
                 if (message.type === "crystools.monitor" || message.type === "hardware.monitor") {
                     updateMonitorUI(monitorElements, message.data);
                 }
             } catch (error) {
-                // 忽略非JSON消息
+                // Ignore non-JSON messages
             }
             
-            // 调用原有的处理函数
+            // Call original handler
             if (originalOnMessage) {
                 originalOnMessage.call(this, event);
             }
@@ -1868,41 +1868,41 @@ function setupWebSocketListener(monitorElements) {
     }
 }
 
-// 获取系统信息以确定活跃的GPU
+// Get system information to determine active GPUs
 async function fetchSystemStats(monitorElements) {
     try {
-        // 获取当前页面的主机地址
+        // Get current page host address
         const currentUrl = window.location.href;
         const url = new URL(currentUrl);
         const baseUrl = `${url.protocol}//${url.host}`;
         
-        // 构建API URL
+        // Build API URL
         const apiUrl = `${baseUrl}/api/system_stats`;
         
         const response = await fetch(apiUrl);
         if (response.ok) {
             const data = await response.json();
             
-            // 存储活跃GPU索引和设备信息
+            // Store active GPU indices and device information
             monitorElements.activeGpuIndices = [];
             monitorElements.cmdGpuIndices = [];
             monitorElements.gpuDevices = {};
             
-            // 解析设备信息，存储显卡型号
+            // Parse device information, store GPU model
             if (data.devices && data.devices.length > 0) {
                 data.devices.forEach(device => {
                     if (device.type === 'cuda') {
-                        // 提取显卡型号名称
+                        // Extract GPU model name
                         let gpuName = device.name || '';
                         if (gpuName.includes('NVIDIA')) {
-                            // 从完整名称中提取型号部分
+                            // Extract model part from full name
                             const match = gpuName.match(/NVIDIA\s+(GeForce\s+RTX\s+\w+|Tesla\s+\w+|Quadro\s+\w+|RTX\s+\w+|GTX\s+\w+)/i);
                             if (match && match[1]) {
                                 gpuName = match[1];
                             }
                         }
                         
-                        // 存储设备信息
+                        // Store device information
                         monitorElements.gpuDevices[device.index] = {
                             name: gpuName,
                             vram_total: device.vram_total,
@@ -1913,28 +1913,28 @@ async function fetchSystemStats(monitorElements) {
                 console.log("Hardware Monitor Plugin - GPU devices info:", monitorElements.gpuDevices);
             }
             
-            // 检查命令行参数中的CUDA设备
+            // Check CUDA devices in command line arguments
             if (data.system && data.system.argv) {
                 const cudaDeviceArg = data.system.argv.indexOf('--cuda-device');
                 if (cudaDeviceArg !== -1 && cudaDeviceArg + 1 < data.system.argv.length) {
                     const deviceArg = data.system.argv[cudaDeviceArg + 1];
-                    // 解析设备参数（可能是单个数字或逗号分隔的列表）
+                    // Parse device parameter (might be single number or comma-separated list)
                     const devices = deviceArg.split(',').map(d => parseInt(d.trim()));
                     
-                    // 存储命令行指定的GPU索引
+                    // Store command line specified GPU indices
                     monitorElements.cmdGpuIndices = devices;
                     
-                    // 为命令行指定的设备添加提示信息
+                    // Add hint information for command line specified devices
                     devices.forEach(cmdIndex => {
-                        // 尝试从设备列表中找到对应的实际设备
+                        // Try to find corresponding actual device from device list
                         for (const deviceIndex in monitorElements.gpuDevices) {
                             if (parseInt(deviceIndex) === cmdIndex) {
-                                return; // 已存在，不需要添加
+                                return; // Already exists, no need to add
                             }
                         }
                         
-                        // 如果找不到对应的实际设备，添加一个假设的设备
-                        // 这主要是处理命令行指定了设备，但API中没有返回该设备的情况
+                        // If corresponding actual device not found, add an assumed device
+                        // This mainly handles cases where command line specifies device but API doesn't return it
                         monitorElements.gpuDevices[cmdIndex] = {
                             name: "Unknown GPU",
                             index: cmdIndex
@@ -1944,85 +1944,85 @@ async function fetchSystemStats(monitorElements) {
             }
         }
     } catch (error) {
-        // 静默处理错误
+        // Silently handle error
     }
 }
 
-// 更新监控UI
+// Update monitor UI
 function updateMonitorUI(monitorElements, data) {
     if (!monitorElements || !monitorElements.container) return;
 
-    // 确保悬浮窗可见
+    // Ensure floating window is visible
     const floatContainer = document.getElementById('hardware-monitor-float');
     if (floatContainer && floatContainer.style.display === 'none') {
         floatContainer.style.display = 'block';
     }
 
-    // 更新CPU使用率
+    // Update CPU usage
     if (data.cpu_utilization !== undefined) {
         const cpuPercent = Math.round(data.cpu_utilization);
         monitorElements.cpu.update(`${cpuPercent}%`, cpuPercent);
     }
 
-    // 更新RAM使用率
+    // Update RAM usage
     if (data.ram_used_percent !== undefined) {
         const ramPercent = Math.round(data.ram_used_percent);
         monitorElements.ram.update(`${ramPercent}%`, ramPercent, data.ram_used, data.ram_total);
     }
 
-    // 更新GPU信息
-    // 确保gpus字段总是存在
+    // Update GPU information
+    // Ensure gpus field always exists
     const gpus = data.gpus || [];
 
-    // 显示分隔线（仅当有GPU数据时显示一次）
+    // Show divider (only once when there's GPU data)
     const divider = document.getElementById('gpu-divider');
     if (gpus.length > 0 && divider) {
         divider.style.display = 'block';
     }
 
-    // 确定要显示哪些GPU
+    // Determine which GPUs to show
     let gpuIndicesToShow = [];
     const cmdLineSpecifiedGpus = gpus.filter(gpu => gpu.is_cmdline_specified);
 
-    // 优先显示命令行指定的GPU
+    // Prioritize command line specified GPUs
     if (cmdLineSpecifiedGpus.length > 0) {
         gpuIndicesToShow = cmdLineSpecifiedGpus.map(gpu => gpu.index);
     } else {
-        // 否则显示所有GPU
+        // Otherwise show all GPUs
         gpuIndicesToShow = gpus.map(gpu => gpu.index);
     }
 
-    // 处理每个要显示的GPU
+    // Process each GPU to show
     gpuIndicesToShow.forEach((gpuIndex, idx) => {
-        // 确保gpuIndex不是undefined
+        // Ensure gpuIndex is not undefined
         if (gpuIndex === undefined || gpuIndex === null) {
             return;
         }
-        // 从gpus中找到对应的GPU数据
+        // Find corresponding GPU data from gpus
         const gpuData = gpus.find(gpu => gpu.index === gpuIndex);
 
-        // 格式化标签
+        // Format labels
         const gpuLabel = `GPU ${gpuIndex}`;
-        const vramLabel = `显存`;
-        const tempLabel = `温度 ${gpuIndex}`;
+        const vramLabel = `VRAM`;
+        const tempLabel = `Temp ${gpuIndex}`;
 
-        // 准备提示信息
+        // Prepare tooltip information
         const gpuName = (gpuData && gpuData.name) || `GPU ${gpuIndex}`;
         const gpuTooltip = `GPU ${gpuIndex}: ${gpuName}`;
 
-        // 确保已创建了对应的GPU组
+        // Ensure corresponding GPU group has been created
         if (!monitorElements.gpuGroups[gpuIndex]) {
-            // 创建新的GPU组
+            // Create new GPU group
             const gpuGroup = document.createElement('div');
             gpuGroup.className = 'monitor-group gpu-group';
 
-            // 添加GPU组标题
+            // Add GPU group title
             const gpuTitle = document.createElement('div');
             gpuTitle.className = 'monitor-group-title';
             gpuTitle.textContent = `GPU ${gpuIndex}: ${gpuName.split(' ').pop() || `GPU${gpuIndex}`}`;
             gpuGroup.appendChild(gpuTitle);
 
-            // 将GPU组插入到自动清理按钮之前
+            // Insert GPU group before auto cleanup button
             const cleanupButton = monitorElements.container.querySelector('.monitor-cleanup-button');
             if (cleanupButton) {
                 monitorElements.container.insertBefore(gpuGroup, cleanupButton);
@@ -2030,19 +2030,19 @@ function updateMonitorUI(monitorElements, data) {
                 monitorElements.container.appendChild(gpuGroup);
             }
 
-            // 创建GPU指示器
+            // Create GPU indicator
             const gpuEl = createMonitorElement(gpuLabel, '0%', 'gpu-progress');
             gpuEl.container.title = gpuTooltip;
             gpuGroup.appendChild(gpuEl.container);
 
-            // 创建VRAM指示器
+            // Create VRAM indicator
             const vramEl = createMonitorElement(vramLabel, '0', 'vram-progress');
             vramEl.container.title = `${gpuTooltip} - VRAM`;
             gpuGroup.appendChild(vramEl.container);
 
-            // 创建温度指示器
+            // Create temperature indicator
             const tempEl = createMonitorElement(tempLabel, '0°', 'temp-progress');
-            tempEl.container.title = `${gpuTooltip} - 温度`;
+            tempEl.container.title = `${gpuTooltip} - Temperature`;
             gpuGroup.appendChild(tempEl.container);
 
             monitorElements.gpuGroups[gpuIndex] = {
@@ -2053,7 +2053,7 @@ function updateMonitorUI(monitorElements, data) {
                 tempEl: tempEl
             };
 
-            // 应用当前字体缩放
+            // Apply current font scaling
             if (monitorElements.currentFontScale && monitorElements.currentFontScale !== 1) {
                 const scale = monitorElements.currentFontScale;
                 gpuTitle.style.fontSize = `${13 * scale}px`;
@@ -2067,17 +2067,17 @@ function updateMonitorUI(monitorElements, data) {
             }
         }
 
-        // 获取当前GPU组的监控元素
+        // Get monitor elements for current GPU group
         const currentGroup = monitorElements.gpuGroups[gpuIndex];
 
-        // 更新GPU利用率
+        // Update GPU utilization
         const gpuPercent = gpuData ? Math.round(gpuData.gpu_utilization) : 0;
         if (currentGroup.gpuEl) {
             currentGroup.gpuEl.update(`${gpuPercent}%`, gpuPercent);
-            currentGroup.gpuEl.container.title = `${gpuTooltip} - 使用率: ${gpuPercent}%`;
+            currentGroup.gpuEl.container.title = `${gpuTooltip} - Usage: ${gpuPercent}%`;
         }
 
-        // 更新VRAM使用率
+        // Update VRAM usage
         const vramPercent = gpuData ? Math.round(gpuData.vram_used_percent) : 0;
         const vramUsed = gpuData ? gpuData.vram_used : 0;
         const vramTotal = gpuData ? gpuData.vram_total : 0;
@@ -2085,11 +2085,11 @@ function updateMonitorUI(monitorElements, data) {
             currentGroup.vramEl.update(``, vramPercent, vramUsed, vramTotal);
         }
 
-        // 更新温度
+        // Update temperature
         const tempValue = gpuData ? Math.round(gpuData.gpu_temperature) : 0;
         if (currentGroup.tempEl) {
             currentGroup.tempEl.update(`${tempValue}°C`, tempValue);
-            currentGroup.tempEl.container.title = `${gpuTooltip} - 温度: ${tempValue}°C`;
+            currentGroup.tempEl.container.title = `${gpuTooltip} - Temperature: ${tempValue}°C`;
         }
     });
 }

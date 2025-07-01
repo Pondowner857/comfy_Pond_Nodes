@@ -6,10 +6,10 @@ import logging
 import sys
 from server import PromptServer
 
-# 尝试截获和过滤HiDream日志
+# Try to intercept and filter HiDream logs
 class HiDreamFilter(logging.Filter):
     def filter(self, record):
-        # 如果日志消息来自HiDream并包含特定关键词，过滤掉
+        # If log message is from HiDream and contains specific keywords, filter it out
         if hasattr(record, 'msg') and isinstance(record.msg, str):
             if record.msg.startswith("HiDream:") and (
                 "unloading all models" in record.msg or 
@@ -19,7 +19,7 @@ class HiDreamFilter(logging.Filter):
                 return False
         return True
 
-# 应用日志过滤器
+# Apply log filter
 for handler in logging.root.handlers:
     handler.addFilter(HiDreamFilter())
 
@@ -27,15 +27,15 @@ class MemoryManager:
     def __init__(self):
         self.server = PromptServer.instance
         self.enabled = False
-        self.interval = 60  # 默认60秒
+        self.interval = 60  # Default 60 seconds
         self.timer = None
         self.timer_lock = threading.Lock()
-        self.verbose = False  # 默认不输出详细信息
-        self.last_free_time = 0  # 上次释放内存的时间
-        self.min_interval = 0.1  # 最小间隔时间（秒）- 改为0.1秒
+        self.verbose = False  # Default to not outputting verbose information
+        self.last_free_time = 0  # Last time memory was freed
+        self.min_interval = 0.1  # Minimum interval time (seconds) - changed to 0.1 seconds
         
     def start(self):
-        """启动内存清理定时器"""
+        """Start memory cleanup timer"""
         with self.timer_lock:
             if self.timer is not None:
                 self.stop()
@@ -44,25 +44,25 @@ class MemoryManager:
             self.timer = threading.Timer(self.interval, self._timer_callback)
             self.timer.daemon = True
             self.timer.start()
-            # 仅在首次启动时输出一条消息
+            # Only output a message on first startup
             if self.verbose:
-                print(f"内存管理器已启动，间隔: {self.interval}秒")
+                print(f"Memory manager started, interval: {self.interval} seconds")
     
     def stop(self):
-        """停止内存清理定时器"""
+        """Stop memory cleanup timer"""
         with self.timer_lock:
             if self.timer is not None:
                 self.timer.cancel()
                 self.timer = None
                 self.enabled = False
                 if self.verbose:
-                    print("内存管理器已停止")
+                    print("Memory manager stopped")
     
     def _timer_callback(self):
-        """定时器回调函数，执行内存清理并重新设置定时器"""
+        """Timer callback function, execute memory cleanup and reset timer"""
         self.free_memory()
         
-        # 重新设置定时器以实现循环调用
+        # Reset timer for loop calling
         if self.enabled:
             with self.timer_lock:
                 self.timer = threading.Timer(self.interval, self._timer_callback)
@@ -70,29 +70,29 @@ class MemoryManager:
                 self.timer.start()
     
     def free_memory(self):
-        """调用API释放内存"""
+        """Call API to free memory"""
         try:
-            # 检查是否已经过了最小间隔时间
+            # Check if minimum interval time has passed
             current_time = time.time()
             if current_time - self.last_free_time < self.min_interval:
                 if self.verbose:
-                    print(f"内存释放太频繁，跳过此次释放")
+                    print(f"Memory release too frequent, skipping this release")
                 return {"status": "skipped", "reason": "too frequent"}
             
             self.last_free_time = current_time
             
-            # 使用静默方式请求内存释放
+            # Use silent mode to request memory release
             with open("/dev/null", "w") as devnull:
                 old_stdout = sys.stdout
                 old_stderr = sys.stderr
                 
-                # 暂时重定向标准输出和错误输出
+                # Temporarily redirect standard output and error output
                 if not self.verbose:
                     sys.stdout = devnull
                     sys.stderr = devnull
                 
                 try:
-                    # 直接使用请求调用ComfyUI的API
+                    # Directly use request to call ComfyUI API
                     url = "http://127.0.0.1:8188/free"
                     payload = {
                         "unload_models": True, 
@@ -103,26 +103,26 @@ class MemoryManager:
                     if response.status_code == 200:
                         result = response.json()
                     else:
-                        result = {"error": f"状态码: {response.status_code}"}
+                        result = {"error": f"Status code: {response.status_code}"}
                         
                     return result
                 finally:
-                    # 恢复标准输出和错误输出
+                    # Restore standard output and error output
                     sys.stdout = old_stdout
                     sys.stderr = old_stderr
                     
         except Exception as e:
             if self.verbose:
-                print(f"释放内存出错: {str(e)}")
+                print(f"Error freeing memory: {str(e)}")
             return {"error": str(e)}
 
-# 创建全局实例
+# Create global instance
 memory_manager = MemoryManager()
 
 class MemoryManagerNode:
     """
-    内存管理器节点
-    周期性调用API释放内存
+    Memory manager node
+    Periodically calls API to free memory
     """
     
     @classmethod
@@ -136,46 +136,46 @@ class MemoryManagerNode:
         }
     
     RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("状态",)
+    RETURN_NAMES = ("status",)
     FUNCTION = "manage_memory"
     CATEGORY = "🐳Pond/Tools"
     
     def manage_memory(self, enabled, interval_seconds, verbose):
         global memory_manager
         
-        # 更新设置
+        # Update settings
         memory_manager.interval = interval_seconds
         memory_manager.verbose = verbose
         
-        # 根据设置启动或停止
+        # Start or stop based on settings
         if enabled and not memory_manager.enabled:
             memory_manager.start()
-            status = f"内存管理器已启动，间隔: {interval_seconds}秒"
+            status = f"Memory manager started, interval: {interval_seconds} seconds"
         elif not enabled and memory_manager.enabled:
             memory_manager.stop()
-            status = "内存管理器已停止"
+            status = "Memory manager stopped"
         elif enabled and memory_manager.enabled and memory_manager.interval != interval_seconds:
-            # 如果间隔变化，重启定时器
+            # If interval changes, restart timer
             memory_manager.stop()
             memory_manager.interval = interval_seconds
             memory_manager.start()
-            status = f"内存管理器已更新，间隔: {interval_seconds}秒"
+            status = f"Memory manager updated, interval: {interval_seconds} seconds"
         elif enabled:
-            status = f"内存管理器正在运行，间隔: {interval_seconds}秒"
+            status = f"Memory manager running, interval: {interval_seconds} seconds"
         else:
-            status = "内存管理器已停止"
+            status = "Memory manager stopped"
             
         return (status,)
     
     @classmethod
     def IS_CHANGED(cls, enabled, interval_seconds, verbose):
-        # 设置更改后重新执行节点
+        # Re-execute node after settings change
         global memory_manager
         if enabled != memory_manager.enabled or interval_seconds != memory_manager.interval or verbose != memory_manager.verbose:
             return True
         return False
 
-# 在脚本结束时停止定时器
+# Stop timer when script ends
 import atexit
 
 @atexit.register
@@ -184,11 +184,11 @@ def cleanup():
     if memory_manager.enabled:
         memory_manager.stop()
 
-# 注册节点
+# Register node
 NODE_CLASS_MAPPINGS = {
-    "内存管理器": MemoryManagerNode
+    "MemoryManagerNode": MemoryManagerNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "内存管理器": "🐳内存管理器"
+    "MemoryManagerNode": "🐳Memory Manager"
 }

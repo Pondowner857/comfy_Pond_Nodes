@@ -5,7 +5,7 @@ import torch
 import os
 import folder_paths
 
-# ComfyUI 的 models 目录
+# ComfyUI models directory
 models_dir = folder_paths.models_dir
 
 class RealESRGANUpscaler:
@@ -31,17 +31,17 @@ class RealESRGANUpscaler:
     CATEGORY = "🐳Pond/image"
 
     def upscale(self, image, blend):
-        # 图像转 numpy
+        # Convert image to numpy
         img_tensor = image
         img = 255. * img_tensor.cpu().numpy()[0]
         img = Image.fromarray(np.clip(img, 0, 255).astype(np.uint8))
 
-        # 指定模型路径（固定）
+        # Specify model path (fixed)
         model_path = os.path.join(models_dir, "real_esrgan_x4_fp16.onnx")
         if not os.path.exists(model_path):
-            raise FileNotFoundError(f"找不到模型文件：{model_path}")
+            raise FileNotFoundError(f"Model file not found: {model_path}")
 
-        # GPU 优先，找不到就回退到 CPU
+        # GPU priority, fallback to CPU if not available
         providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
 
         sess_options = ort.SessionOptions()
@@ -56,18 +56,18 @@ class RealESRGANUpscaler:
         input_name = sess.get_inputs()[0].name
         output_name = sess.get_outputs()[0].name
 
-        # 预处理
+        # Preprocessing
         lr_img = np.array(img).astype(np.float32) / 255.0
         lr_img = np.transpose(lr_img, (2, 0, 1))
         lr_img = np.expand_dims(lr_img, axis=0)
 
-        # 推理
+        # Inference
         sr_img = sess.run(
             [output_name],
             {input_name: lr_img}
         )[0]
 
-        # 后处理
+        # Post-processing
         sr_img = np.squeeze(sr_img, axis=0)
         sr_img = np.clip(sr_img * 255, 0, 255)
         sr_img = np.transpose(sr_img, (1, 2, 0))
@@ -81,11 +81,11 @@ class RealESRGANUpscaler:
         result = torch.from_numpy(sr_img.astype(np.float32) / 255.0).unsqueeze(0)
         return (result,)
 
-# 节点注册
+# Node registration
 NODE_CLASS_MAPPINGS = {
     "RealESRGANUpscaler": RealESRGANUpscaler
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "RealESRGANUpscaler": "🐳RealESRGAN 超分辨率"
+    "RealESRGANUpscaler": "🐳RealESRGAN Super Resolution"
 }

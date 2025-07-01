@@ -5,9 +5,9 @@ from PIL import Image
 
 class MaskRemoveNode:
     """
-    ComfyUI节点：根据遮罩移除图像背景
-    保留白色区域，移除黑色区域
-    输出原图大小和裁剪后的图像
+    ComfyUI node: Remove image background based on mask
+    Keep white areas, remove black areas
+    Output original size and cropped images
     """
     
     def __init__(self):
@@ -17,17 +17,17 @@ class MaskRemoveNode:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "图像": ("IMAGE",),
-                "遮罩": ("MASK",),
-                "边缘细化类型": (["无", "高斯模糊", "形态学平滑", "边缘羽化"],),
-                "细化强度": ("FLOAT", {
+                "image": ("IMAGE",),
+                "mask": ("MASK",),
+                "edge_refinement_type": (["none", "gaussian_blur", "morphological_smooth", "edge_feather"],),
+                "refinement_strength": ("FLOAT", {
                     "default": 1.0,
                     "min": 0.0,
                     "max": 10.0,
                     "step": 0.1,
                     "display": "slider"
                 }),
-                "裁剪边距": ("INT", {
+                "crop_margin": ("INT", {
                     "default": 0,
                     "min": 0,
                     "max": 100,
@@ -38,169 +38,169 @@ class MaskRemoveNode:
         }
     
     RETURN_TYPES = ("IMAGE", "IMAGE", "MASK")
-    RETURN_NAMES = ("原尺寸图像", "裁剪图像", "使用遮罩")
+    RETURN_NAMES = ("original_size_image", "cropped_image", "used_mask")
     FUNCTION = "remove_background"
     CATEGORY = "🐳Pond/mask"
     
-    def remove_background(self, 图像, 遮罩, 边缘细化类型, 细化强度, 裁剪边距):
+    def remove_background(self, image, mask, edge_refinement_type, refinement_strength, crop_margin):
         """
-        根据遮罩移除图像背景，并对边缘进行细化处理
+        Remove image background based on mask with edge refinement
         
         Args:
-            图像: 输入图像张量 (B, H, W, C)
-            遮罩: 遮罩张量 (B, H, W) 或 (H, W)
-            边缘细化类型: 边缘处理方式
-            细化强度: 处理强度
-            裁剪边距: 裁剪时的额外边距
+            image: Input image tensor (B, H, W, C)
+            mask: Mask tensor (B, H, W) or (H, W)
+            edge_refinement_type: Edge processing method
+            refinement_strength: Processing strength
+            crop_margin: Extra margin when cropping
             
         Returns:
-            tuple: (原尺寸处理后的图像, 裁剪后的图像, 使用的遮罩)
+            tuple: (original size processed image, cropped image, used mask)
         """
-        # 确保输入是torch张量
-        if not isinstance(图像, torch.Tensor):
-            图像 = torch.tensor(图像)
-        if not isinstance(遮罩, torch.Tensor):
-            遮罩 = torch.tensor(遮罩)
+        # Ensure inputs are torch tensors
+        if not isinstance(image, torch.Tensor):
+            image = torch.tensor(image)
+        if not isinstance(mask, torch.Tensor):
+            mask = torch.tensor(mask)
         
-        # 获取图像尺寸
-        if len(图像.shape) == 4:  # (B, H, W, C)
-            batch_size, height, width, channels = 图像.shape
-        elif len(图像.shape) == 3:  # (H, W, C)
-            图像 = 图像.unsqueeze(0)  # 添加批次维度
-            batch_size, height, width, channels = 图像.shape
+        # Get image dimensions
+        if len(image.shape) == 4:  # (B, H, W, C)
+            batch_size, height, width, channels = image.shape
+        elif len(image.shape) == 3:  # (H, W, C)
+            image = image.unsqueeze(0)  # Add batch dimension
+            batch_size, height, width, channels = image.shape
         else:
-            raise ValueError("图像格式不正确，应为 (B, H, W, C) 或 (H, W, C)")
+            raise ValueError("Image format incorrect, should be (B, H, W, C) or (H, W, C)")
         
-        # 处理遮罩尺寸
-        if len(遮罩.shape) == 2:  # (H, W)
-            遮罩 = 遮罩.unsqueeze(0)  # 添加批次维度 (B, H, W)
-        elif len(遮罩.shape) == 3:  # (B, H, W)
+        # Process mask dimensions
+        if len(mask.shape) == 2:  # (H, W)
+            mask = mask.unsqueeze(0)  # Add batch dimension (B, H, W)
+        elif len(mask.shape) == 3:  # (B, H, W)
             pass
         else:
-            raise ValueError("遮罩格式不正确，应为 (H, W) 或 (B, H, W)")
+            raise ValueError("Mask format incorrect, should be (H, W) or (B, H, W)")
         
-        # 确保遮罩和图像尺寸匹配
-        if 遮罩.shape[-2:] != (height, width):
-            # 调整遮罩尺寸
-            遮罩 = torch.nn.functional.interpolate(
-                遮罩.unsqueeze(1).float(), 
+        # Ensure mask and image sizes match
+        if mask.shape[-2:] != (height, width):
+            # Resize mask
+            mask = torch.nn.functional.interpolate(
+                mask.unsqueeze(1).float(), 
                 size=(height, width), 
                 mode='nearest'
             ).squeeze(1)
         
-        # 确保遮罩值在0-1范围内
-        遮罩 = torch.clamp(遮罩, 0, 1)
+        # Ensure mask values are in 0-1 range
+        mask = torch.clamp(mask, 0, 1)
         
-        # 边缘细化处理
-        if 边缘细化类型 != "无" and 细化强度 > 0:
-            遮罩 = self.refine_mask_edges(遮罩, 边缘细化类型, 细化强度)
+        # Edge refinement processing
+        if edge_refinement_type != "none" and refinement_strength > 0:
+            mask = self.refine_mask_edges(mask, edge_refinement_type, refinement_strength)
         
-        # 创建原尺寸结果图像
-        原尺寸图像 = 图像.clone()
+        # Create original size result image
+        original_size_image = image.clone()
         
-        # 应用遮罩：保留白色区域(1)，移除黑色区域(0)
+        # Apply mask: keep white areas(1), remove black areas(0)
         for b in range(batch_size):
             for c in range(channels):
-                if c < 3:  # RGB通道
-                    原尺寸图像[b, :, :, c] = 图像[b, :, :, c] * 遮罩[b]
-                else:  # Alpha通道
+                if c < 3:  # RGB channels
+                    original_size_image[b, :, :, c] = image[b, :, :, c] * mask[b]
+                else:  # Alpha channel
                     if channels == 4:
-                        原尺寸图像[b, :, :, c] = 遮罩[b]
+                        original_size_image[b, :, :, c] = mask[b]
         
-        # 如果原图像没有Alpha通道，添加Alpha通道
+        # Add alpha channel if original image doesn't have one
         if channels == 3:
-            alpha_channel = 遮罩.unsqueeze(-1)  # (B, H, W, 1)
-            原尺寸图像 = torch.cat([原尺寸图像, alpha_channel], dim=-1)
+            alpha_channel = mask.unsqueeze(-1)  # (B, H, W, 1)
+            original_size_image = torch.cat([original_size_image, alpha_channel], dim=-1)
         
-        # 创建裁剪图像列表
-        裁剪图像列表 = []
+        # Create cropped image list
+        cropped_image_list = []
         
         for b in range(batch_size):
-            # 找到遮罩中非零区域的边界
-            mask_b = 遮罩[b]
-            非零位置 = torch.where(mask_b > 0)
+            # Find boundaries of non-zero areas in mask
+            mask_b = mask[b]
+            nonzero_positions = torch.where(mask_b > 0)
             
-            if len(非零位置[0]) > 0:  # 如果有非零区域
-                # 计算边界框
-                y_min = 非零位置[0].min().item()
-                y_max = 非零位置[0].max().item()
-                x_min = 非零位置[1].min().item()
-                x_max = 非零位置[1].max().item()
+            if len(nonzero_positions[0]) > 0:  # If there are non-zero areas
+                # Calculate bounding box
+                y_min = nonzero_positions[0].min().item()
+                y_max = nonzero_positions[0].max().item()
+                x_min = nonzero_positions[1].min().item()
+                x_max = nonzero_positions[1].max().item()
                 
-                # 添加边距
-                y_min = max(0, y_min - 裁剪边距)
-                y_max = min(height - 1, y_max + 裁剪边距)
-                x_min = max(0, x_min - 裁剪边距)
-                x_max = min(width - 1, x_max + 裁剪边距)
+                # Add margin
+                y_min = max(0, y_min - crop_margin)
+                y_max = min(height - 1, y_max + crop_margin)
+                x_min = max(0, x_min - crop_margin)
+                x_max = min(width - 1, x_max + crop_margin)
                 
-                # 裁剪图像
-                裁剪部分 = 原尺寸图像[b, y_min:y_max+1, x_min:x_max+1, :]
-                裁剪图像列表.append(裁剪部分)
+                # Crop image
+                cropped_part = original_size_image[b, y_min:y_max+1, x_min:x_max+1, :]
+                cropped_image_list.append(cropped_part)
             else:
-                # 如果没有非零区域，返回一个小的透明图像
-                小图像 = torch.zeros(1, 1, 原尺寸图像.shape[-1], device=图像.device)
-                裁剪图像列表.append(小图像)
+                # If no non-zero areas, return small transparent image
+                small_image = torch.zeros(1, 1, original_size_image.shape[-1], device=image.device)
+                cropped_image_list.append(small_image)
         
-        # 找到最大的裁剪尺寸，以便创建统一大小的批次
-        max_h = max(img.shape[0] for img in 裁剪图像列表)
-        max_w = max(img.shape[1] for img in 裁剪图像列表)
+        # Find maximum crop size to create uniform batch size
+        max_h = max(img.shape[0] for img in cropped_image_list)
+        max_w = max(img.shape[1] for img in cropped_image_list)
         
-        # 创建统一大小的裁剪图像批次
-        裁剪图像批次 = torch.zeros(batch_size, max_h, max_w, 原尺寸图像.shape[-1], device=图像.device)
+        # Create uniform size cropped image batch
+        cropped_image_batch = torch.zeros(batch_size, max_h, max_w, original_size_image.shape[-1], device=image.device)
         
-        for b, img in enumerate(裁剪图像列表):
+        for b, img in enumerate(cropped_image_list):
             h, w = img.shape[:2]
-            # 将裁剪图像放在左上角
-            裁剪图像批次[b, :h, :w, :] = img
+            # Place cropped image in top-left corner
+            cropped_image_batch[b, :h, :w, :] = img
         
-        # 确保输出格式正确
-        原尺寸图像 = torch.clamp(原尺寸图像, 0, 1)
-        裁剪图像批次 = torch.clamp(裁剪图像批次, 0, 1)
-        使用遮罩 = torch.clamp(遮罩, 0, 1)
+        # Ensure output format is correct
+        original_size_image = torch.clamp(original_size_image, 0, 1)
+        cropped_image_batch = torch.clamp(cropped_image_batch, 0, 1)
+        used_mask = torch.clamp(mask, 0, 1)
         
-        return (原尺寸图像, 裁剪图像批次, 使用遮罩)
+        return (original_size_image, cropped_image_batch, used_mask)
     
     def refine_mask_edges(self, mask, refine_type, strength):
         """
-        对遮罩边缘进行细化处理
+        Refine mask edges
         
         Args:
-            mask: 遮罩张量
-            refine_type: 细化类型
-            strength: 细化强度
+            mask: Mask tensor
+            refine_type: Refinement type
+            strength: Refinement strength
             
         Returns:
-            refined_mask: 细化后的遮罩
+            refined_mask: Refined mask
         """
-        if refine_type == "高斯模糊":
+        if refine_type == "gaussian_blur":
             return self.gaussian_blur_refine(mask, strength)
-        elif refine_type == "形态学平滑":
+        elif refine_type == "morphological_smooth":
             return self.morphological_refine(mask, strength)
-        elif refine_type == "边缘羽化":
+        elif refine_type == "edge_feather":
             return self.feather_edges(mask, strength)
         else:
             return mask
     
     def gaussian_blur_refine(self, mask, strength):
-        """高斯模糊边缘细化"""
-        # 计算模糊核大小
+        """Gaussian blur edge refinement"""
+        # Calculate blur kernel size
         kernel_size = int(strength * 6) + 1
         if kernel_size % 2 == 0:
             kernel_size += 1
         
-        # 高斯模糊参数
+        # Gaussian blur parameters
         sigma = strength * 2.0
         
-        # 添加通道维度进行模糊
+        # Add channel dimension for blurring
         mask_blur = mask.unsqueeze(1).float()  # (B, 1, H, W)
         
-        # 创建高斯核
+        # Create Gaussian kernel
         coords = torch.arange(kernel_size, dtype=torch.float32, device=mask.device)
         coords -= kernel_size // 2
         g = torch.exp(-(coords ** 2) / (2 * sigma ** 2))
         g /= g.sum()
         
-        # 分别进行水平和垂直模糊
+        # Perform horizontal and vertical blur separately
         kernel_1d = g.view(1, 1, -1, 1)
         mask_blur = F.conv2d(mask_blur, kernel_1d, padding=(kernel_size//2, 0))
         
@@ -210,31 +210,31 @@ class MaskRemoveNode:
         return mask_blur.squeeze(1)
     
     def morphological_refine(self, mask, strength):
-        """形态学平滑处理"""
+        """Morphological smoothing processing"""
         kernel_size = int(strength * 3) + 1
         if kernel_size % 2 == 0:
             kernel_size += 1
         
-        # 创建形态学核
+        # Create morphological kernel
         kernel = torch.ones(1, 1, kernel_size, kernel_size, device=mask.device) / (kernel_size * kernel_size)
         mask_morph = mask.unsqueeze(1).float()
         
-        # 先腐蚀再膨胀（开运算）
+        # First erode then dilate (opening operation)
         mask_morph = F.conv2d(mask_morph, kernel, padding=kernel_size//2)
         mask_morph = torch.clamp(mask_morph, 0, 1)
         
-        # 再膨胀再腐蚀（闭运算）
+        # Then dilate then erode (closing operation)
         mask_morph = 1 - F.conv2d(1 - mask_morph, kernel, padding=kernel_size//2)
         mask_morph = torch.clamp(mask_morph, 0, 1)
         
         return mask_morph.squeeze(1)
     
     def feather_edges(self, mask, strength):
-        """边缘羽化处理（纯PyTorch实现）"""
-        # 使用多次高斯模糊实现边缘羽化效果
+        """Edge feathering processing (pure PyTorch implementation)"""
+        # Use multiple Gaussian blurs to achieve edge feathering effect
         feather_radius = max(1, int(strength * 5))
         
-        # 创建多个不同强度的模糊版本
+        # Create multiple blurred versions with different strengths
         mask_float = mask.unsqueeze(1).float()
         blurred_masks = []
         
@@ -250,32 +250,32 @@ class MaskRemoveNode:
             g = torch.exp(-(coords ** 2) / (2 * sigma ** 2))
             g /= g.sum()
             
-            # 水平模糊
+            # Horizontal blur
             kernel_1d = g.view(1, 1, -1, 1)
             blurred = F.conv2d(mask_float, kernel_1d, padding=(kernel_size//2, 0))
             
-            # 垂直模糊
+            # Vertical blur
             kernel_1d = g.view(1, 1, 1, -1)
             blurred = F.conv2d(blurred, kernel_1d, padding=(0, kernel_size//2))
             
             blurred_masks.append(blurred)
         
-        # 混合不同强度的模糊结果
+        # Blend different strength blur results
         if blurred_masks:
-            # 使用最后一个（最强）模糊作为基础
+            # Use the last (strongest) blur as base
             result = blurred_masks[-1]
-            # 保持原始边缘的一些锐度
+            # Keep some sharpness of original edges
             result = mask_float * 0.3 + result * 0.7
         else:
             result = mask_float
         
         return result.squeeze(1)
 
-# 注册节点
+# Register node
 NODE_CLASS_MAPPINGS = {
-    "遮罩移除": MaskRemoveNode
+    "MaskRemoveNode": MaskRemoveNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "遮罩移除": "🐳遮罩移除"
+    "MaskRemoveNode": "🐳Mask Remove"
 }
