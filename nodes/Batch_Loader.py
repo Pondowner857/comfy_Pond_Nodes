@@ -344,8 +344,8 @@ class SmartBatchLoader(BaseFolderLoader):
             }
         }
     
-    RETURN_TYPES = ("IMAGE", "STRING", "INT", "LIST")
-    RETURN_NAMES = ("图像批次", "文本内容", "文件总数", "文件信息")
+    RETURN_TYPES = ("IMAGE", "STRING", "INT", "LIST", "DICT")
+    RETURN_NAMES = ("图像批次", "文本内容", "文件总数", "文件信息", "统计信息")
     FUNCTION = "load_batch"
     CATEGORY = "🐳Pond/Tools"
     OUTPUT_NODE = True
@@ -450,17 +450,28 @@ class SmartBatchLoader(BaseFolderLoader):
         texts = []
         file_info = []
         
-        for file_path in batch_files:
-            filename = os.path.basename(file_path)
-            ext = os.path.splitext(filename)[1].lower()
+        # 在混合模式下，分别收集图像和文本
+        if file_type == "mixed":
+            image_files = []
+            text_files = []
             
-            info = {
-                "文件名": filename,
-                "路径": file_path,
-                "类型": "图像" if ext in self.supported_image_formats else "文本"
-            }
+            # 分类文件
+            for file_path in batch_files:
+                ext = os.path.splitext(file_path)[1].lower()
+                if ext in self.supported_image_formats:
+                    image_files.append(file_path)
+                elif ext in self.supported_text_formats:
+                    text_files.append(file_path)
             
-            if ext in self.supported_image_formats:
+            # 处理图像文件
+            for file_path in image_files:
+                filename = os.path.basename(file_path)
+                info = {
+                    "文件名": filename,
+                    "路径": file_path,
+                    "类型": "图像"
+                }
+                
                 try:
                     img = Image.open(file_path)
                     if img.mode != 'RGB':
@@ -471,7 +482,6 @@ class SmartBatchLoader(BaseFolderLoader):
                     
                     img_array = np.array(img).astype(np.float32) / 255.0
                     images.append(img_array)
-                    texts.append(filename)
                     info["宽度"] = img.width
                     info["高度"] = img.height
                 except Exception as e:
@@ -481,21 +491,83 @@ class SmartBatchLoader(BaseFolderLoader):
                         images.append(np.zeros((target_size, target_size, 3), dtype=np.float32))
                     else:
                         images.append(np.zeros((64, 64, 3), dtype=np.float32))
-                    texts.append(f"错误: {filename}")
                     info["错误"] = str(e)
+                
+                file_info.append(info)
             
-            elif ext in self.supported_text_formats:
-                # 文本文件，创建空白图像
+            # 处理文本文件
+            text_contents = []
+            for file_path in text_files:
+                filename = os.path.basename(file_path)
+                info = {
+                    "文件名": filename,
+                    "路径": file_path,
+                    "类型": "文本"
+                }
+                
+                content = self.load_text_with_cache(file_path)
+                text_contents.append(f"[{filename}]:\n{content}")
+                info["文本长度"] = len(content)
+                file_info.append(info)
+            
+            # 合并文本内容
+            texts = text_contents if text_contents else ["未找到文本文件"]
+            
+            # 如果没有图像，创建一个空白图像
+            if not images:
                 if resize_mode != "none":
                     images.append(np.zeros((target_size, target_size, 3), dtype=np.float32))
                 else:
                     images.append(np.zeros((64, 64, 3), dtype=np.float32))
+        
+        else:
+            # 非混合模式，保持原有逻辑
+            for file_path in batch_files:
+                filename = os.path.basename(file_path)
+                ext = os.path.splitext(filename)[1].lower()
                 
-                content = self.load_text_with_cache(file_path)
-                texts.append(f"[{filename}]:\n{content}")
-                info["文本长度"] = len(content)
-            
-            file_info.append(info)
+                info = {
+                    "文件名": filename,
+                    "路径": file_path,
+                    "类型": "图像" if ext in self.supported_image_formats else "文本"
+                }
+                
+                if ext in self.supported_image_formats:
+                    try:
+                        img = Image.open(file_path)
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
+                        
+                        # 调整大小
+                        img = self.resize_image(img, resize_mode, target_size)
+                        
+                        img_array = np.array(img).astype(np.float32) / 255.0
+                        images.append(img_array)
+                        texts.append(filename)
+                        info["宽度"] = img.width
+                        info["高度"] = img.height
+                    except Exception as e:
+                        print(f"加载图像出错 {file_path}: {e}")
+                        # 创建与目标大小匹配的空白图像
+                        if resize_mode != "none":
+                            images.append(np.zeros((target_size, target_size, 3), dtype=np.float32))
+                        else:
+                            images.append(np.zeros((64, 64, 3), dtype=np.float32))
+                        texts.append(f"错误: {filename}")
+                        info["错误"] = str(e)
+                
+                elif ext in self.supported_text_formats:
+                    # 文本文件，创建空白图像
+                    if resize_mode != "none":
+                        images.append(np.zeros((target_size, target_size, 3), dtype=np.float32))
+                    else:
+                        images.append(np.zeros((64, 64, 3), dtype=np.float32))
+                    
+                    content = self.load_text_with_cache(file_path)
+                    texts.append(f"[{filename}]:\n{content}")
+                    info["文本长度"] = len(content)
+                
+                file_info.append(info)
         
         # 转换为tensor
         if images:
@@ -517,9 +589,26 @@ class SmartBatchLoader(BaseFolderLoader):
         else:
             images_tensor = torch.zeros((1, 64, 64, 3))
         
-        combined_text = "\n---\n".join(texts) if texts else ""
+        # 处理文本输出和统计信息
+        stats = {
+            "总文件数": len(files),
+            "批次大小": batch_size,
+            "开始索引": start_index
+        }
         
-        return (images_tensor, combined_text, len(files), file_info)
+        if file_type == "mixed":
+            # 混合模式下，只输出文本文件的内容
+            combined_text = "\n---\n".join(texts) if isinstance(texts, list) else texts
+            # 添加混合模式的统计信息
+            stats["图像文件数"] = len([f for f in file_info if f["类型"] == "图像"])
+            stats["文本文件数"] = len([f for f in file_info if f["类型"] == "文本"])
+            stats["模式"] = "混合"
+        else:
+            # 非混合模式，保持原有逻辑
+            combined_text = "\n---\n".join(texts) if texts else ""
+            stats["模式"] = file_type
+        
+        return (images_tensor, combined_text, len(files), file_info, stats)
 
 
 # 清理缓存的辅助函数
@@ -540,5 +629,5 @@ NODE_CLASS_MAPPINGS = {
 # 节点显示名称
 NODE_DISPLAY_NAME_MAPPINGS = {
     "AdvancedFolderLoader": "🐳文件夹加载",
-    "SmartBatchLoader": "🐳批量加载器",
+    "SmartBatchLoader": "🐳批量加载",
 }
