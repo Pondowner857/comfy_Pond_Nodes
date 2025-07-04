@@ -25,6 +25,9 @@ from .nodes.math_tools import NODE_CLASS_MAPPINGS as math_tools_MAPPINGS, NODE_D
 from .nodes.VideoFrameExtractor import NODE_CLASS_MAPPINGS as VideoFrameExtractor_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as VideoFrameExtractor_DISPLAY_NAME_MAPPINGS
 from .nodes.PoseSelector import NODE_CLASS_MAPPINGS as PoseSelector_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as PoseSelector_DISPLAY_NAME_MAPPINGS
 from .nodes.Clothing_Selector import NODE_CLASS_MAPPINGS as Clothing_Selector_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as Clothing_Selector_DISPLAY_NAME_MAPPINGS
+from .nodes.image_filter import NODE_CLASS_MAPPINGS as image_filter_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as image_filter_DISPLAY_NAME_MAPPINGS
+from .nodes.HDR import NODE_CLASS_MAPPINGS as HDR_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as HDR_DISPLAY_NAME_MAPPINGS
+from .nodes.Batch_Loader import NODE_CLASS_MAPPINGS as Batch_Loader_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as Batch_Loader_DISPLAY_NAME_MAPPINGS
 # 合并所有节点类映射
 NODE_CLASS_MAPPINGS = {
     **yoloCrop_MAPPINGS,
@@ -52,7 +55,10 @@ NODE_CLASS_MAPPINGS = {
     **math_tools_MAPPINGS,
     **VideoFrameExtractor_MAPPINGS,
     **PoseSelector_MAPPINGS,
-    **Clothing_Selector_MAPPINGS
+    **Clothing_Selector_MAPPINGS,
+    **image_filter_MAPPINGS,
+    **HDR_MAPPINGS,
+    **Batch_Loader_MAPPINGS
 }
 
 # 合并所有节点显示名称映射
@@ -82,7 +88,10 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **math_tools_DISPLAY_NAME_MAPPINGS,
     **VideoFrameExtractor_DISPLAY_NAME_MAPPINGS,
     **PoseSelector_DISPLAY_NAME_MAPPINGS,
-    **Clothing_Selector_DISPLAY_NAME_MAPPINGS
+    **Clothing_Selector_DISPLAY_NAME_MAPPINGS,
+    **image_filter_DISPLAY_NAME_MAPPINGS,
+    **HDR_DISPLAY_NAME_MAPPINGS,
+    **Batch_Loader_DISPLAY_NAME_MAPPINGS
 }
 
 # 导出
