@@ -1,0 +1,818 @@
+{
+  "id": "67ec995c-4cfe-4c3c-91f4-3d5b8ea25712",
+  "revision": 0,
+  "last_node_id": 16,
+  "last_link_id": 14,
+  "nodes": [
+    {
+      "id": 6,
+      "type": "easy showAnything",
+      "pos": [
+        -12270,
+        160
+      ],
+      "size": [
+        210,
+        88
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "输入任何",
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "e46f8a45d0f07558900eed0ad120d6ccbd0aab03",
+        "Node name for S&R": "easy showAnything",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "[object Object]"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "easy showAnything",
+      "pos": [
+        -12270,
+        290
+      ],
+      "size": [
+        210,
+        88
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "输入任何",
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "e46f8a45d0f07558900eed0ad120d6ccbd0aab03",
+        "Node name for S&R": "easy showAnything",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "{\"\\u603b\\u6587\\u4ef6\\u6570\": 312, \"\\u6279\\u6b21\\u5927\\u5c0f\": 1, \"\\u5f00\\u59cb\\u7d22\\u5f15\": 45, \"\\u6a21\\u5f0f\": \"\\u56fe\\u50cf+\\u6587\\u672c\", \"\\u914d\\u5bf9\\u6210\\u529f\\u6570\": 1, \"\\u914d\\u5bf9\\u5931\\u8d25\\u6570\": 0}"
+      ]
+    },
+    {
+      "id": 8,
+      "type": "PreviewImage",
+      "pos": [
+        -12290,
+        -490
+      ],
+      "size": [
+        210,
+        270
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "图像",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 6
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "PreviewImage",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 12,
+      "type": "easy showAnything",
+      "pos": [
+        -12260,
+        690
+      ],
+      "size": [
+        210,
+        88
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "输入任何",
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "e46f8a45d0f07558900eed0ad120d6ccbd0aab03",
+        "Node name for S&R": "easy showAnything",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "78_T.jpg"
+      ]
+    },
+    {
+      "id": 14,
+      "type": "easy showAnything",
+      "pos": [
+        -12240,
+        980
+      ],
+      "size": [
+        210,
+        88
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "输入任何",
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "e46f8a45d0f07558900eed0ad120d6ccbd0aab03",
+        "Node name for S&R": "easy showAnything",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "156"
+      ]
+    },
+    {
+      "id": 15,
+      "type": "easy showAnything",
+      "pos": [
+        -12240,
+        1150
+      ],
+      "size": [
+        210,
+        88
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "输入任何",
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "e46f8a45d0f07558900eed0ad120d6ccbd0aab03",
+        "Node name for S&R": "easy showAnything",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "{\"\\u5b8c\\u6574\\u8def\\u5f84\": \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\Kontext_training_512\\\\78_T.jpg\", \"\\u6587\\u4ef6\\u540d\": \"78_T.jpg\", \"\\u6269\\u5c55\\u540d\": \".jpg\", \"\\u6587\\u4ef6\\u5927\\u5c0f\": 21927, \"\\u4fee\\u6539\\u65f6\\u95f4\": \"2025-07-08T18:13:50.148038\", \"\\u7d22\\u5f15\": 77, \"\\u603b\\u6587\\u4ef6\\u6570\": 156, \"\\u914d\\u5bf9\\u6587\\u672c\": \"\\u627e\\u5230\", \"\\u6587\\u672c\\u957f\\u5ea6\": 502, \"\\u5bbd\\u5ea6\": 512, \"\\u9ad8\\u5ea6\": 737, \"\\u6a21\\u5f0f\": \"RGB\"}"
+      ]
+    },
+    {
+      "id": 13,
+      "type": "easy showAnything",
+      "pos": [
+        -12220,
+        810
+      ],
+      "size": [
+        210,
+        88
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "输入任何",
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "e46f8a45d0f07558900eed0ad120d6ccbd0aab03",
+        "Node name for S&R": "easy showAnything",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "77"
+      ]
+    },
+    {
+      "id": 16,
+      "type": "CR Text",
+      "pos": [
+        -13260,
+        660
+      ],
+      "size": [
+        510,
+        600
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "文本",
+          "name": "text",
+          "type": "*",
+          "links": null
+        },
+        {
+          "label": "显示帮助",
+          "name": "show_help",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
+        "Node name for S&R": "CR Text",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "Pattern 参数使用指南：\n\n----------\n\n常用通配符：\n\n* - 匹配任意数量的字符\n? - 匹配单个字符\n[字符集] - 匹配括号内的任意字符\n[!字符集] - 匹配不在括号内的字符\n\n实用示例：\n\n基础匹配\n*              # 匹配所有文件（默认）\n*.png          # 只匹配 PNG 图片\n*.jpg          # 只匹配 JPG 图片\n*.*            # 匹配所有带扩展名的文件\n\n前缀/后缀匹配\nimage_*.png    # 匹配 image_001.png, image_test.png 等\n*_final.jpg    # 匹配 project_final.jpg, test_final.jpg 等\ntest*          # 匹配所有以 test 开头的文件\n\n精确长度匹配\n???.png        # 匹配恰好3个字符的PNG文件名（如 001.png）\nIMG_????.jpg   # 匹配 IMG_0001.jpg 到 IMG_9999.jpg\nframe_???.png  # 匹配 frame_001.png 到 frame_999.png\n\n字符范围匹配\n[0-9]*.png     # 匹配以数字开头的PNG文件\n[a-z]*.jpg     # 匹配以小写字母开头的JPG文件\ntest[1-5].png  # 匹配 test1.png 到 test5.png\nimg[ABC].jpg   # 匹配 imgA.jpg, imgB.jpg, imgC.jpg\n\n排除匹配\n[!._]*         # 排除以点或下划线开头的文件（隐藏文件）\n[!0-9]*        # 排除以数字开头的文件\n*[!backup].*   # 排除文件名以 backup 结尾的文件\n\n复杂组合\nphoto_20??_*.jpg      # 匹配 photo_2023_xxx.jpg 格式\n[A-Z][A-Z]_[0-9]*.png # 匹配 AB_123.png 格式\n*_[0-9][0-9][0-9].*   # 匹配文件名以3位数字结尾的文件",
+        [
+          false,
+          true
+        ]
+      ],
+      "color": "#332922",
+      "bgcolor": "#593930"
+    },
+    {
+      "id": 10,
+      "type": "PreviewImage",
+      "pos": [
+        -11950,
+        320
+      ],
+      "size": [
+        140,
+        246
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "图像",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 9
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "PreviewImage",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 11,
+      "type": "easy showAnything",
+      "pos": [
+        -11990,
+        610
+      ],
+      "size": [
+        350,
+        200
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "输入任何",
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "e46f8a45d0f07558900eed0ad120d6ccbd0aab03",
+        "Node name for S&R": "easy showAnything",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "Generate a model and background for these clothes while maintaining the original texture and details of the garment.The image shows a young man standing in front of a plain white background. He is wearing a navy blue sweatshirt and navy blue trousers. The sweatshirt has a round neckline and long sleeves. The trousers have a slim fit and are slightly tapered at the ankles. The man is also wearing white sneakers. He has short dark hair and is looking directly at the camera with a serious expression."
+      ]
+    },
+    {
+      "id": 1,
+      "type": "SmartBatchLoader",
+      "pos": [
+        -12680,
+        -310
+      ],
+      "size": [
+        270,
+        354
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "start_index",
+          "name": "start_index",
+          "type": "INT",
+          "widget": {
+            "name": "start_index"
+          },
+          "link": 7
+        }
+      ],
+      "outputs": [
+        {
+          "label": "图像批次",
+          "name": "图像批次",
+          "type": "IMAGE",
+          "links": [
+            6
+          ]
+        },
+        {
+          "label": "文本内容",
+          "name": "文本内容",
+          "type": "STRING",
+          "links": [
+            2
+          ]
+        },
+        {
+          "label": "文件总数",
+          "name": "文件总数",
+          "type": "INT",
+          "links": [
+            3
+          ]
+        },
+        {
+          "label": "文件信息",
+          "name": "文件信息",
+          "type": "LIST",
+          "links": [
+            4
+          ]
+        },
+        {
+          "label": "统计信息",
+          "name": "统计信息",
+          "type": "DICT",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "Pondowner857/comfy_Pond_Nodes",
+        "ver": "e9bd7e7fd6aaa55a1d82132bf6277106d45c63a5",
+        "Node name for S&R": "SmartBatchLoader",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "C:\\Users\\Administrator\\Desktop\\Kontext_training_512",
+        "图像+文本",
+        1,
+        0,
+        true,
+        578907120852203,
+        "randomize",
+        "无",
+        "无",
+        512
+      ]
+    },
+    {
+      "id": 5,
+      "type": "easy showAnything",
+      "pos": [
+        -12290,
+        50
+      ],
+      "size": [
+        210,
+        88
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "输入任何",
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "e46f8a45d0f07558900eed0ad120d6ccbd0aab03",
+        "Node name for S&R": "easy showAnything",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "312"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "easy showAnything",
+      "pos": [
+        -12280,
+        -160
+      ],
+      "size": [
+        330,
+        160
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "输入任何",
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "e46f8a45d0f07558900eed0ad120d6ccbd0aab03",
+        "Node name for S&R": "easy showAnything",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "[44_T.jpg]:\nGenerate a model and background for these clothes while maintaining the original texture and details of the garment.The image shows a young woman wearing a pink polo shirt and a navy blue skirt. She is standing in front of a plain white background and is posing with one hand on her hip and the other hand resting on her thigh. She has long blonde hair and is wearing white sneakers. The woman has a serious expression on her face and is looking directly at the camera."
+      ]
+    },
+    {
+      "id": 9,
+      "type": "CR Seed",
+      "pos": [
+        -13110,
+        190
+      ],
+      "size": [
+        270,
+        102
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "随机种",
+          "name": "seed",
+          "type": "INT",
+          "links": [
+            7,
+            8
+          ]
+        },
+        {
+          "name": "show_help",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
+        "Node name for S&R": "CR Seed",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        46,
+        "increment"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "AdvancedFolderLoader",
+      "pos": [
+        -12690,
+        250
+      ],
+      "size": [
+        270,
+        374
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "index",
+          "name": "index",
+          "type": "INT",
+          "widget": {
+            "name": "index"
+          },
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "label": "图像",
+          "name": "图像",
+          "type": "IMAGE",
+          "links": [
+            9
+          ]
+        },
+        {
+          "label": "文本",
+          "name": "文本",
+          "type": "STRING",
+          "links": [
+            10
+          ]
+        },
+        {
+          "label": "文件名",
+          "name": "文件名",
+          "type": "STRING",
+          "links": [
+            11
+          ]
+        },
+        {
+          "label": "索引",
+          "name": "索引",
+          "type": "INT",
+          "links": [
+            12
+          ]
+        },
+        {
+          "label": "文件总数",
+          "name": "文件总数",
+          "type": "INT",
+          "links": [
+            13
+          ]
+        },
+        {
+          "label": "元数据",
+          "name": "元数据",
+          "type": "DICT",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "Pondowner857/comfy_Pond_Nodes",
+        "ver": "e9bd7e7fd6aaa55a1d82132bf6277106d45c63a5",
+        "Node name for S&R": "AdvancedFolderLoader",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "C:\\Users\\Administrator\\Desktop\\Kontext_training_512",
+        "随机",
+        "图像+文本",
+        0,
+        455230459381386,
+        "randomize",
+        "*_T.jpg",
+        false,
+        "名称",
+        -1
+      ]
+    }
+  ],
+  "links": [
+    [
+      2,
+      1,
+      1,
+      4,
+      0,
+      "*"
+    ],
+    [
+      3,
+      1,
+      2,
+      5,
+      0,
+      "*"
+    ],
+    [
+      4,
+      1,
+      3,
+      6,
+      0,
+      "*"
+    ],
+    [
+      5,
+      1,
+      4,
+      7,
+      0,
+      "*"
+    ],
+    [
+      6,
+      1,
+      0,
+      8,
+      0,
+      "IMAGE"
+    ],
+    [
+      7,
+      9,
+      0,
+      1,
+      0,
+      "INT"
+    ],
+    [
+      8,
+      9,
+      0,
+      2,
+      0,
+      "INT"
+    ],
+    [
+      9,
+      2,
+      0,
+      10,
+      0,
+      "IMAGE"
+    ],
+    [
+      10,
+      2,
+      1,
+      11,
+      0,
+      "*"
+    ],
+    [
+      11,
+      2,
+      2,
+      12,
+      0,
+      "*"
+    ],
+    [
+      12,
+      2,
+      3,
+      13,
+      0,
+      "*"
+    ],
+    [
+      13,
+      2,
+      4,
+      14,
+      0,
+      "*"
+    ],
+    [
+      14,
+      2,
+      5,
+      15,
+      0,
+      "*"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ue_links": [],
+    "links_added_by_ue": [],
+    "ds": {
+      "scale": 0.895430243255265,
+      "offset": [
+        13337.484327764476,
+        402.85886257558263
+      ]
+    },
+    "frontendVersion": "1.23.4"
+  },
+  "version": 0.4
+}

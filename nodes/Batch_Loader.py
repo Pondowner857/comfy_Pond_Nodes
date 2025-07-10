@@ -169,6 +169,19 @@ class BaseFolderLoader:
         
         print(f"无法使用任何编码读取文本文件 {text_path}")
         return ""
+    
+    def find_paired_text(self, image_path: str) -> str:
+        """查找图像对应的文本文件"""
+        # 获取不带扩展名的文件路径
+        base_path = os.path.splitext(image_path)[0]
+        
+        # 尝试多种常见的文本扩展名
+        for ext in ['.txt', '.caption', '.prompt']:
+            text_path = base_path + ext
+            if os.path.exists(text_path):
+                return self.load_text_with_cache(text_path)
+        
+        return ""  # 如果没找到配对文本，返回空字符串
 
 
 class AdvancedFolderLoader(BaseFolderLoader):
@@ -186,7 +199,7 @@ class AdvancedFolderLoader(BaseFolderLoader):
                 "mode": (["随机", "索引", "顺序"], {
                     "default": "随机"
                 }),
-                "file_type": (["图像", "文本", "自动"], {
+                "file_type": (["图像", "文本", "自动", "图像+文本"], {
                     "default": "自动"
                 }),
                 "index": ("INT", {
@@ -231,21 +244,26 @@ class AdvancedFolderLoader(BaseFolderLoader):
         
         # 转换中文参数为英文（内部使用）
         mode_map = {"随机": "random", "索引": "index", "顺序": "sequential"}
-        file_type_map = {"图像": "image", "文本": "text", "自动": "auto"}
+        file_type_map = {"图像": "image", "文本": "text", "自动": "auto", "图像+文本": "image_text"}
         sort_by_map = {"名称": "name", "日期": "date", "大小": "size"}
         
         mode = mode_map.get(mode, mode)
         file_type = file_type_map.get(file_type, file_type)
         sort_by = sort_by_map.get(sort_by, sort_by)
         
-        # 获取或更新文件列表
-        cache_key = f"{folder_path}_{file_type}_{pattern}_{recursive}_{sort_by}"
-        
-        if cache_key not in self.file_lists:
-            files = self.get_files_from_folder(folder_path, file_type, recursive, pattern, sort_by)
-            self.file_lists[cache_key] = files
+        # 处理图像+文本模式
+        if file_type == "image_text":
+            # 只获取图像文件
+            files = self.get_files_from_folder(folder_path, "image", recursive, pattern, sort_by)
         else:
-            files = self.file_lists[cache_key]
+            # 获取或更新文件列表
+            cache_key = f"{folder_path}_{file_type}_{pattern}_{recursive}_{sort_by}"
+            
+            if cache_key not in self.file_lists:
+                files = self.get_files_from_folder(folder_path, file_type, recursive, pattern, sort_by)
+                self.file_lists[cache_key] = files
+            else:
+                files = self.file_lists[cache_key]
         
         if not files:
             empty_image = torch.zeros((1, 64, 64, 3))
@@ -277,7 +295,29 @@ class AdvancedFolderLoader(BaseFolderLoader):
         }
         
         # 加载内容
-        if ext in self.supported_image_formats:
+        if file_type == "image_text":
+            # 图像+文本模式
+            image = self.load_image_with_cache(selected_file)
+            paired_text = self.find_paired_text(selected_file)
+            
+            if paired_text:
+                text = paired_text
+                metadata["配对文本"] = "找到"
+                metadata["文本长度"] = len(paired_text)
+            else:
+                text = f"未找到 {filename} 的配对文本文件"
+                metadata["配对文本"] = "未找到"
+            
+            # 添加图像元数据
+            try:
+                with Image.open(selected_file) as img:
+                    metadata["宽度"] = img.width
+                    metadata["高度"] = img.height
+                    metadata["模式"] = img.mode
+            except:
+                pass
+                
+        elif ext in self.supported_image_formats:
             image = self.load_image_with_cache(selected_file)
             text = f"图像: {filename}"
             
@@ -312,7 +352,7 @@ class SmartBatchLoader(BaseFolderLoader):
         return {
             "required": {
                 "folder_path": ("STRING", {"default": "", "placeholder": "输入文件夹路径"}),
-                "file_type": (["图像", "文本", "混合"], {"default": "图像"}),
+                "file_type": (["图像", "文本", "混合", "图像+文本"], {"default": "图像"}),
                 "batch_size": ("INT", {
                     "default": 1,
                     "min": 1,
@@ -406,7 +446,7 @@ class SmartBatchLoader(BaseFolderLoader):
         """批量加载文件"""
         
         # 转换中文参数为英文（内部使用）
-        file_type_map = {"图像": "image", "文本": "text", "混合": "mixed"}
+        file_type_map = {"图像": "image", "文本": "text", "混合": "mixed", "图像+文本": "image_text"}
         group_by_map = {"无": "none", "扩展名": "extension", "前缀": "prefix", "日期": "date"}
         resize_mode_map = {"无": "none", "缩放": "resize", "裁剪": "crop", "填充": "pad"}
         
@@ -417,12 +457,15 @@ class SmartBatchLoader(BaseFolderLoader):
         # 获取文件列表
         if file_type == "mixed":
             files = self.get_files_from_folder(folder_path, "auto", recursive=False)
+        elif file_type == "image_text":
+            # 图像+文本模式，只获取图像文件
+            files = self.get_files_from_folder(folder_path, "image", recursive=False)
         else:
             files = self.get_files_from_folder(folder_path, file_type, recursive=False)
         
         if not files:
             empty_image = torch.zeros((1, 64, 64, 3))
-            return (empty_image, "", 0, [])
+            return (empty_image, "", 0, [], {})
         
         # 分组处理
         if group_by != "none":
@@ -450,8 +493,53 @@ class SmartBatchLoader(BaseFolderLoader):
         texts = []
         file_info = []
         
+        # 处理图像+文本模式
+        if file_type == "image_text":
+            for file_path in batch_files:
+                filename = os.path.basename(file_path)
+                info = {
+                    "文件名": filename,
+                    "路径": file_path,
+                    "类型": "图像+文本"
+                }
+                
+                try:
+                    # 加载图像
+                    img = Image.open(file_path)
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    
+                    # 调整大小
+                    img = self.resize_image(img, resize_mode, target_size)
+                    
+                    img_array = np.array(img).astype(np.float32) / 255.0
+                    images.append(img_array)
+                    info["宽度"] = img.width
+                    info["高度"] = img.height
+                    
+                    # 查找配对文本
+                    paired_text = self.find_paired_text(file_path)
+                    if paired_text:
+                        texts.append(f"[{filename}]:\n{paired_text}")
+                        info["配对文本"] = "找到"
+                        info["文本长度"] = len(paired_text)
+                    else:
+                        texts.append(f"[{filename}]: 未找到配对文本")
+                        info["配对文本"] = "未找到"
+                        
+                except Exception as e:
+                    print(f"加载图像出错 {file_path}: {e}")
+                    if resize_mode != "none":
+                        images.append(np.zeros((target_size, target_size, 3), dtype=np.float32))
+                    else:
+                        images.append(np.zeros((64, 64, 3), dtype=np.float32))
+                    texts.append(f"错误: {filename}")
+                    info["错误"] = str(e)
+                
+                file_info.append(info)
+                
         # 在混合模式下，分别收集图像和文本
-        if file_type == "mixed":
+        elif file_type == "mixed":
             image_files = []
             text_files = []
             
@@ -603,6 +691,12 @@ class SmartBatchLoader(BaseFolderLoader):
             stats["图像文件数"] = len([f for f in file_info if f["类型"] == "图像"])
             stats["文本文件数"] = len([f for f in file_info if f["类型"] == "文本"])
             stats["模式"] = "混合"
+        elif file_type == "image_text":
+            # 图像+文本模式
+            combined_text = "\n---\n".join(texts) if texts else ""
+            stats["模式"] = "图像+文本"
+            stats["配对成功数"] = len([f for f in file_info if f.get("配对文本") == "找到"])
+            stats["配对失败数"] = len([f for f in file_info if f.get("配对文本") == "未找到"])
         else:
             # 非混合模式，保持原有逻辑
             combined_text = "\n---\n".join(texts) if texts else ""
