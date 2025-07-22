@@ -107,12 +107,12 @@ class YoloBboxesCropNode:
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"找不到模型文件: {model_path}")
         
-        print(f"加载YOLO模型: {model_path}")
+        #print(f"加载YOLO模型: {model_path}")
         
         try:
             self.model = YOLO(model_path)
             self.current_model_name = model_name
-            print(f"成功加载模型: {model_name}")
+            #print(f"成功加载模型: {model_name}")
             return self.model
         except Exception as e:
             raise RuntimeError(f"加载YOLO模型失败: {str(e)}")
@@ -382,17 +382,17 @@ class YoloBboxesCropNode:
         try:
             model = self.load_model(model_name)
         except Exception as e:
-            print(f"模型加载失败: {e}")
+            #print(f"模型加载失败: {e}")
             # 返回原图和空遮罩
             empty_mask = torch.zeros((1, tensor_height, tensor_width), dtype=torch.float32)
-            empty_bboxes = torch.zeros((0, 4), dtype=torch.float32)
+            empty_bboxes = []  # 改为返回空列表
             return ([image], empty_mask, empty_bboxes, "模型加载失败", 0)
         
         # 转换为PIL图像进行检测
         pil_img = self.tensor_to_pil(image)
         
         # 执行检测
-        print(f"执行YOLO检测，置信度阈值: {confidence}")
+        #print(f"执行YOLO检测，置信度阈值: {confidence}")
         results = model(pil_img, conf=confidence, verbose=False)
         
         # 过滤检测结果
@@ -402,13 +402,13 @@ class YoloBboxesCropNode:
         detections = self.sort_detections(detections, sort_by)
         
         if not detections:
-            print("未检测到任何对象")
+            #print("未检测到任何对象")
             # 返回原图和原图大小的空遮罩
             empty_mask = torch.zeros((1, tensor_height, tensor_width), dtype=torch.float32)
-            empty_bboxes = torch.zeros((0, 4), dtype=torch.float32)
+            empty_bboxes = []  # 改为返回空列表
             return ([image], empty_mask, empty_bboxes, "未检测到对象", 0)
         
-        print(f"检测到 {len(detections)} 个对象，排序方式: {sort_by}")
+        #print(f"检测到 {len(detections)} 个对象，排序方式: {sort_by}")
         
         # 转换为numpy数组进行处理
         img_np = np.array(pil_img)
@@ -424,7 +424,7 @@ class YoloBboxesCropNode:
         # 根据裁剪模式选择要处理的对象
         if crop_mode == "单个对象":
             if object_index >= len(detections):
-                print(f"警告: 对象索引 {object_index} 超出范围，使用最后一个对象")
+                #print(f"警告: 对象索引 {object_index} 超出范围，使用最后一个对象")
                 object_index = len(detections) - 1
             selected_detections = [detections[object_index]]
         elif crop_mode == "按类别":
@@ -477,12 +477,22 @@ class YoloBboxesCropNode:
         # 确保遮罩数据类型和范围正确
         final_mask = final_mask.clamp(0.0, 1.0)
         
-        # 转换边界框为tensor
-        final_bboxes = torch.tensor(bboxes, dtype=torch.float32)
+        # 修改这里：确保边界框是扁平的列表格式
+        # 每个边界框应该是 [x1, y1, x2, y2] 的列表
+        final_bboxes = []
+        for bbox in bboxes:
+            if isinstance(bbox, (list, tuple)) and len(bbox) == 4:
+                # 确保是列表格式，不是元组
+                final_bboxes.append(list(bbox))
+            else:
+                print(f"警告：跳过无效的边界框格式: {bbox}")
         
         # 生成检测信息字符串
         info_str = f"检测到 {len(detections)} 个对象，裁剪了 {len(selected_detections)} 个\n"
         info_str += "\n".join(detection_info)
+        
+        #print(f"输出边界框数量: {len(final_bboxes)}")
+        #print(f"边界框列表: {final_bboxes}")
         
         # 返回裁剪的图像列表和合并的遮罩
         return (cropped_images, final_mask, final_bboxes, info_str, len(selected_detections))
