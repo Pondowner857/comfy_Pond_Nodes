@@ -206,8 +206,7 @@ class AdvancedFolderLoader(BaseFolderLoader):
                     "default": 0,
                     "min": 0,
                     "max": 99999,
-                    "display": "number",
-                    "lazy": True
+                    "display": "number"
                 }),
                 "seed": ("INT", {
                     "default": -1,
@@ -238,9 +237,19 @@ class AdvancedFolderLoader(BaseFolderLoader):
         super().__init__()
         self.file_lists = {}  # 缓存文件列表
     
-    def load_from_folder(self, folder_path, mode, file_type, index, seed, pattern, 
-                        recursive, sort_by, previous_index=-1):
+    def load_from_folder(self, folder_path, mode, file_type, index=0, seed=-1, pattern="*", 
+                        recursive=False, sort_by="名称", previous_index=-1):
         """主加载函数"""
+        
+        # 处理可能为 None 的参数
+        if index is None:
+            index = 0
+        if seed is None:
+            seed = -1
+        if pattern is None:
+            pattern = "*"
+        if previous_index is None:
+            previous_index = -1
         
         # 转换中文参数为英文（内部使用）
         mode_map = {"随机": "random", "索引": "index", "顺序": "sequential"}
@@ -441,9 +450,21 @@ class SmartBatchLoader(BaseFolderLoader):
         
         return img
     
-    def load_batch(self, folder_path, file_type, batch_size, start_index, shuffle, 
-                   seed, group_by, resize_mode, target_size):
+    def load_batch(self, folder_path, file_type, batch_size=1, start_index=0, shuffle=False, 
+                   seed=-1, group_by="无", resize_mode="无", target_size=512):
         """批量加载文件"""
+        
+        # 处理可能为 None 的参数
+        if batch_size is None:
+            batch_size = 1
+        if start_index is None:
+            start_index = 0
+        if shuffle is None:
+            shuffle = False
+        if seed is None:
+            seed = -1
+        if target_size is None:
+            target_size = 512
         
         # 转换中文参数为英文（内部使用）
         file_type_map = {"图像": "image", "文本": "text", "混合": "mixed", "图像+文本": "image_text"}

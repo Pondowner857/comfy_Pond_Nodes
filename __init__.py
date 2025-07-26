@@ -29,6 +29,7 @@ from .nodes.image_filter import NODE_CLASS_MAPPINGS as image_filter_MAPPINGS, NO
 from .nodes.HDR import NODE_CLASS_MAPPINGS as HDR_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as HDR_DISPLAY_NAME_MAPPINGS
 from .nodes.Batch_Loader import NODE_CLASS_MAPPINGS as Batch_Loader_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as Batch_Loader_DISPLAY_NAME_MAPPINGS
 from .nodes.WanVideoReset import NODE_CLASS_MAPPINGS as WanVideoReset_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as WanVideoReset_DISPLAY_NAME_MAPPINGS
+from .nodes.mask_color import NODE_CLASS_MAPPINGS as mask_color_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as mask_color_DISPLAY_NAME_MAPPINGS
 # 合并所有节点类映射
 NODE_CLASS_MAPPINGS = {
     **yoloCrop_MAPPINGS,
@@ -60,7 +61,8 @@ NODE_CLASS_MAPPINGS = {
     **image_filter_MAPPINGS,
     **HDR_MAPPINGS,
     **Batch_Loader_MAPPINGS,
-    **WanVideoReset_MAPPINGS
+    **WanVideoReset_MAPPINGS,
+    **mask_color_MAPPINGS
 }
 
 # 合并所有节点显示名称映射
@@ -94,7 +96,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **image_filter_DISPLAY_NAME_MAPPINGS,
     **HDR_DISPLAY_NAME_MAPPINGS,
     **Batch_Loader_DISPLAY_NAME_MAPPINGS,
-    **WanVideoReset_DISPLAY_NAME_MAPPINGS
+    **WanVideoReset_DISPLAY_NAME_MAPPINGS,
+    **mask_color_DISPLAY_NAME_MAPPINGS
 }
 
 # 导出
