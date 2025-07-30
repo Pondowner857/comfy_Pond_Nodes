@@ -1,8 +1,8 @@
 {
   "id": "ff827946-5315-4bfc-8b1d-2df7a621c168",
   "revision": 0,
-  "last_node_id": 22,
-  "last_link_id": 29,
+  "last_node_id": 26,
+  "last_link_id": 37,
   "nodes": [
     {
       "id": 14,
@@ -45,18 +45,416 @@
       "bgcolor": "#353"
     },
     {
+      "id": 19,
+      "type": "LayerMask: LoadFlorence2Model",
+      "pos": [
+        -707.2470703125,
+        -665.1997680664062
+      ],
+      "size": [
+        344.1548767089844,
+        58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "florence2_model",
+          "name": "florence2_model",
+          "type": "FLORENCE2",
+          "links": [
+            21
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_LayerStyle_Advance",
+        "ver": "b5d2c94637a629b6294d84e45e636010ca0280a3",
+        "Node name for S&R": "LayerMask: LoadFlorence2Model"
+      },
+      "widgets_values": [
+        "Florence-2-Flux-Large"
+      ],
+      "color": "rgba(27, 80, 119, 0.7)"
+    },
+    {
+      "id": 22,
+      "type": "CR Text",
+      "pos": [
+        -365.08795166015625,
+        -954.311767578125
+      ],
+      "size": [
+        540.509765625,
+        199.2992401123047
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "文本",
+          "name": "text",
+          "type": "*",
+          "links": [
+            27
+          ]
+        },
+        {
+          "label": "显示帮助",
+          "name": "show_help",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
+        "Node name for S&R": "CR Text"
+      },
+      "widgets_values": [
+        "You are a cinematic video prompt expert. Expand a static image or user description into a professional prompt for a 5-second dynamic video scene.\n\nOutput Format:\n{Light Type}, {Light Texture}, {Time of Day}, {Shot Size}, {Composition}, {Character details and inferred motion}, {Camera Movement}, {Atmosphere}, {Color Tone}, {Visual Style}\n\nCore Rules:\n1.Lighting: Choose the light source (sunlight / artificial light / moonlight / firelight) and texture (soft / hard / sidelight / backlight / rim light)\n\n2.Time: daytime / night / dusk / sunset / sunrise / dawn\n\n3.Shot Size: close-up / medium shot / full shot / wide shot\n\n4.Action Inference: Based on the subject’s pose, gesture, or eye direction, logically infer what happens in the next 5 seconds\n\n - Hand near face → might touch or cover the face\n\n - Searching gaze → might turn head or look up\n\n - Leaning forward → might stand up or lean closer\n\n - Two people facing each other → possible physical contact\n\n5.Camera Movement: push-in / pull-back / pan / follow / orbit / handheld\n\n6.Style: e.g., indie film style, ARRI Alexa look, handheld documentary style\n\nRequirements:\nOutput length: 60–120 characters\n\nUse commas to separate elements\n\nFocus on visual-only description — no sound or dialogue\n\nActions must be natural and physically logical, as if unfolding over 5 seconds\n\nExample\nInput: A woman stands by the window, hand on the curtain\nOutput:\nSunlight, soft light, afternoon, medium-close shot, side composition, a woman in a white dress gently pulls open the curtain, sunlight spills on her face, she slightly tilts her chin upward, camera slowly pushes in, blurred city street in the background, warm tones, low saturation, art film style",
+        [
+          false,
+          true
+        ]
+      ]
+    },
+    {
+      "id": 20,
+      "type": "LayerUtility: Florence2Image2Prompt",
+      "pos": [
+        -217.8725128173828,
+        -654.7389526367188
+      ],
+      "size": [
+        362.0445251464844,
+        198
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "florence2_model",
+          "name": "florence2_model",
+          "type": "FLORENCE2",
+          "link": 21
+        },
+        {
+          "label": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "link": 20
+        }
+      ],
+      "outputs": [
+        {
+          "label": "text",
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            25
+          ]
+        },
+        {
+          "label": "preview_image",
+          "name": "preview_image",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_LayerStyle_Advance",
+        "ver": "b5d2c94637a629b6294d84e45e636010ca0280a3",
+        "Node name for S&R": "LayerUtility: Florence2Image2Prompt"
+      },
+      "widgets_values": [
+        "more detailed caption",
+        "",
+        1024,
+        3,
+        false,
+        false
+      ],
+      "color": "rgba(38, 73, 116, 0.7)"
+    },
+    {
+      "id": 18,
+      "type": "LoadImage",
+      "pos": [
+        -944.9151000976562,
+        -529.8062744140625
+      ],
+      "size": [
+        519.9432983398438,
+        504.272705078125
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "图像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            20
+          ]
+        },
+        {
+          "label": "遮罩",
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.46",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "001 (1).png",
+        "image"
+      ]
+    },
+    {
+      "id": 21,
+      "type": "CR Text Concatenate",
+      "pos": [
+        176.17263793945312,
+        -233.05154418945312
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "文本1",
+          "name": "text1",
+          "shape": 7,
+          "type": "STRING",
+          "link": 24
+        },
+        {
+          "label": "文本2",
+          "name": "text2",
+          "shape": 7,
+          "type": "STRING",
+          "link": 25
+        }
+      ],
+      "outputs": [
+        {
+          "label": "字符串",
+          "name": "STRING",
+          "type": "*",
+          "links": [
+            35
+          ]
+        },
+        {
+          "label": "显示帮助",
+          "name": "show_help",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
+        "Node name for S&R": "CR Text Concatenate"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 26,
+      "type": "CR Text Concatenate",
+      "pos": [
+        519.3468017578125,
+        -245.56224060058594
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "文本1",
+          "name": "text1",
+          "shape": 7,
+          "type": "STRING",
+          "link": 36
+        },
+        {
+          "label": "文本2",
+          "name": "text2",
+          "shape": 7,
+          "type": "STRING",
+          "link": 35
+        }
+      ],
+      "outputs": [
+        {
+          "label": "字符串",
+          "name": "STRING",
+          "type": "*",
+          "links": [
+            37
+          ]
+        },
+        {
+          "label": "显示帮助",
+          "name": "show_help",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
+        "Node name for S&R": "CR Text Concatenate"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 25,
+      "type": "VideoPromptNode",
+      "pos": [
+        243.53170776367188,
+        -947.9514770507812
+      ],
+      "size": [
+        300,
+        598
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "prompt",
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            36
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "Pondowner857/comfy_Pond_Nodes",
+        "ver": "b94169d5250c2c89c84b41c75d267e58869085d8",
+        "Node name for S&R": "VideoPromptNode"
+      },
+      "widgets_values": [
+        "custom",
+        "English",
+        "逗号分隔",
+        "电影级画面",
+        "日光",
+        "侧光",
+        "白天",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "镜头向右移动",
+        "环绕运镜",
+        "高兴",
+        "none",
+        "none",
+        "none",
+        "",
+        "",
+        [
+          false,
+          true
+        ],
+        [
+          false,
+          true
+        ]
+      ]
+    },
+    {
+      "id": 17,
+      "type": "CR Text",
+      "pos": [
+        587.1612548828125,
+        -541.051025390625
+      ],
+      "size": [
+        428.3197021484375,
+        113
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "文本",
+          "name": "text",
+          "type": "*",
+          "links": [
+            24
+          ]
+        },
+        {
+          "label": "显示帮助",
+          "name": "show_help",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
+        "Node name for S&R": "CR Text",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "一个女孩把手上的戒指摘下来",
+        [
+          false,
+          true
+        ]
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
       "id": 15,
       "type": "LLM",
       "pos": [
-        317.6067810058594,
-        -1077.6639404296875
+        1118.7833251953125,
+        -840.4520874023438
       ],
       "size": [
         400,
         576
       ],
       "flags": {},
-      "order": 7,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
@@ -137,7 +535,7 @@
           "widget": {
             "name": "user_prompt"
           },
-          "link": 29
+          "link": 37
         }
       ],
       "outputs": [
@@ -183,7 +581,7 @@
       "widgets_values": [
         "你一个强大的人工智能助手。将《》里面的内容根据输入的提示将尽可能详细的将里面的内容转换成一段81帧的慢动作视频的prompt，在输出的时候只输出转换好的英文的prompt",
         "",
-        0.7,
+        0.9,
         "enable",
         "disable",
         "disable",
@@ -207,211 +605,18 @@
       "bgcolor": "#353"
     },
     {
-      "id": 19,
-      "type": "LayerMask: LoadFlorence2Model",
-      "pos": [
-        -707.2470703125,
-        -665.1997680664062
-      ],
-      "size": [
-        344.1548767089844,
-        58
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "label": "florence2_model",
-          "name": "florence2_model",
-          "type": "FLORENCE2",
-          "links": [
-            21
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "ComfyUI_LayerStyle_Advance",
-        "ver": "b5d2c94637a629b6294d84e45e636010ca0280a3",
-        "Node name for S&R": "LayerMask: LoadFlorence2Model"
-      },
-      "widgets_values": [
-        "Florence-2-Flux-Large"
-      ],
-      "color": "rgba(27, 80, 119, 0.7)"
-    },
-    {
-      "id": 21,
-      "type": "CR Text Concatenate",
-      "pos": [
-        180.89730834960938,
-        -393.67767333984375
-      ],
-      "size": [
-        270,
-        78
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "文本1",
-          "name": "text1",
-          "shape": 7,
-          "type": "STRING",
-          "link": 24
-        },
-        {
-          "label": "文本2",
-          "name": "text2",
-          "shape": 7,
-          "type": "STRING",
-          "link": 25
-        }
-      ],
-      "outputs": [
-        {
-          "label": "字符串",
-          "name": "STRING",
-          "type": "*",
-          "links": [
-            29
-          ]
-        },
-        {
-          "label": "显示帮助",
-          "name": "show_help",
-          "type": "STRING",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
-        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
-        "Node name for S&R": "CR Text Concatenate"
-      },
-      "widgets_values": [
-        ""
-      ]
-    },
-    {
-      "id": 22,
-      "type": "CR Text",
-      "pos": [
-        -365.08795166015625,
-        -954.311767578125
-      ],
-      "size": [
-        540.509765625,
-        199.2992401123047
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "label": "文本",
-          "name": "text",
-          "type": "*",
-          "links": [
-            27
-          ]
-        },
-        {
-          "label": "显示帮助",
-          "name": "show_help",
-          "type": "STRING",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
-        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
-        "Node name for S&R": "CR Text"
-      },
-      "widgets_values": [
-        "You are a cinematic video prompt expert. Expand a static image or user description into a professional prompt for a 5-second dynamic video scene.\n\nOutput Format:\n{Light Type}, {Light Texture}, {Time of Day}, {Shot Size}, {Composition}, {Character details and inferred motion}, {Camera Movement}, {Atmosphere}, {Color Tone}, {Visual Style}\n\nCore Rules:\n1.Lighting: Choose the light source (sunlight / artificial light / moonlight / firelight) and texture (soft / hard / sidelight / backlight / rim light)\n\n2.Time: daytime / night / dusk / sunset / sunrise / dawn\n\n3.Shot Size: close-up / medium shot / full shot / wide shot\n\n4.Action Inference: Based on the subject’s pose, gesture, or eye direction, logically infer what happens in the next 5 seconds\n\n - Hand near face → might touch or cover the face\n\n - Searching gaze → might turn head or look up\n\n - Leaning forward → might stand up or lean closer\n\n - Two people facing each other → possible physical contact\n\n5.Camera Movement: push-in / pull-back / pan / follow / orbit / handheld\n\n6.Style: e.g., indie film style, ARRI Alexa look, handheld documentary style\n\nRequirements:\nOutput length: 60–120 characters\n\nUse commas to separate elements\n\nFocus on visual-only description — no sound or dialogue\n\nActions must be natural and physically logical, as if unfolding over 5 seconds\n\nExample\nInput: A woman stands by the window, hand on the curtain\nOutput:\nSunlight, soft light, afternoon, medium-close shot, side composition, a woman in a white dress gently pulls open the curtain, sunlight spills on her face, she slightly tilts her chin upward, camera slowly pushes in, blurred city street in the background, warm tones, low saturation, art film style",
-        [
-          false,
-          true
-        ]
-      ]
-    },
-    {
-      "id": 20,
-      "type": "LayerUtility: Florence2Image2Prompt",
-      "pos": [
-        -217.8725128173828,
-        -654.7389526367188
-      ],
-      "size": [
-        362.0445251464844,
-        198
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "florence2_model",
-          "name": "florence2_model",
-          "type": "FLORENCE2",
-          "link": 21
-        },
-        {
-          "label": "image",
-          "name": "image",
-          "type": "IMAGE",
-          "link": 20
-        }
-      ],
-      "outputs": [
-        {
-          "label": "text",
-          "name": "text",
-          "type": "STRING",
-          "links": [
-            25
-          ]
-        },
-        {
-          "label": "preview_image",
-          "name": "preview_image",
-          "type": "IMAGE",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "ComfyUI_LayerStyle_Advance",
-        "ver": "b5d2c94637a629b6294d84e45e636010ca0280a3",
-        "Node name for S&R": "LayerUtility: Florence2Image2Prompt"
-      },
-      "widgets_values": [
-        "more detailed caption",
-        "",
-        1024,
-        3,
-        false,
-        false
-      ],
-      "color": "rgba(38, 73, 116, 0.7)"
-    },
-    {
       "id": 16,
       "type": "ShowText|pysssss",
       "pos": [
-        904.0669555664062,
-        -791.0462646484375
+        1561.0804443359375,
+        -789.7471313476562
       ],
       "size": [
         611.4061279296875,
         283.9059753417969
       ],
       "flags": {},
-      "order": 8,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -436,95 +641,7 @@
         "widget_ue_connectable": {}
       },
       "widgets_values": [
-        "Artificial light, soft sidelight, daytime, medium shot, rule of thirds composition, a young woman in a black tweed jacket rises from her chair with a thoughtful expression, begins swaying to unheard music, camera follows her movement with a gentle orbit, warm tones, indie film style"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
-    },
-    {
-      "id": 18,
-      "type": "LoadImage",
-      "pos": [
-        -998.8116455078125,
-        -506.4996643066406
-      ],
-      "size": [
-        519.9432983398438,
-        504.272705078125
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "label": "图像",
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            20
-          ]
-        },
-        {
-          "label": "遮罩",
-          "name": "MASK",
-          "type": "MASK",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.46",
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "001 (1).png",
-        "image"
-      ]
-    },
-    {
-      "id": 17,
-      "type": "CR Text",
-      "pos": [
-        -368.37213134765625,
-        -346.9616394042969
-      ],
-      "size": [
-        428.3197021484375,
-        113
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "label": "文本",
-          "name": "text",
-          "type": "*",
-          "links": [
-            24
-          ]
-        },
-        {
-          "label": "显示帮助",
-          "name": "show_help",
-          "type": "STRING",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
-        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
-        "Node name for S&R": "CR Text",
-        "widget_ue_connectable": {}
-      },
-      "widgets_values": [
-        "一个女孩儿站起来跳舞",
-        [
-          false,
-          true
-        ]
+        "Sunlight, soft sidelight, daytime, close-up, rule of thirds, young woman in black tweed jacket slowly removes ring from finger while gazing pensively, camera orbits left, warm muted tones, shallow depth of field, indie film aesthetic"
       ],
       "color": "#232",
       "bgcolor": "#353"
@@ -588,8 +705,24 @@
       "STRING"
     ],
     [
-      29,
+      35,
       21,
+      0,
+      26,
+      1,
+      "STRING"
+    ],
+    [
+      36,
+      25,
+      0,
+      26,
+      0,
+      "STRING"
+    ],
+    [
+      37,
+      26,
       0,
       15,
       10,
@@ -600,10 +733,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.8390545288824586,
+      "scale": 0.47362440744770207,
       "offset": [
-        1121.41291848202,
-        1054.568367967908
+        1220.758757323082,
+        1617.0882518398437
       ]
     },
     "frontendVersion": "1.23.4",
