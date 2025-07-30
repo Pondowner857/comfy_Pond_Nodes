@@ -1,0 +1,616 @@
+{
+  "id": "ff827946-5315-4bfc-8b1d-2df7a621c168",
+  "revision": 0,
+  "last_node_id": 22,
+  "last_link_id": 29,
+  "nodes": [
+    {
+      "id": 14,
+      "type": "LLM_api_loader",
+      "pos": [
+        -125.84071350097656,
+        -1212.27783203125
+      ],
+      "size": [
+        360,
+        130
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "model",
+          "name": "model",
+          "type": "CUSTOM",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui_llm_party",
+        "ver": "e9724c2659f00e8f3f0252983d78e44a19a83ca8",
+        "Node name for S&R": "LLM_api_loader",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "deepseek-chat",
+        "",
+        "",
+        false
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 15,
+      "type": "LLM",
+      "pos": [
+        317.6067810058594,
+        -1077.6639404296875
+      ],
+      "size": [
+        400,
+        576
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "model",
+          "name": "model",
+          "type": "CUSTOM",
+          "link": 14
+        },
+        {
+          "label": "system_prompt_input",
+          "name": "system_prompt_input",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "label": "user_prompt_input",
+          "name": "user_prompt_input",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "label": "tools",
+          "name": "tools",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "label": "file_content",
+          "name": "file_content",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "label": "images",
+          "name": "images",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "extra_parameters",
+          "name": "extra_parameters",
+          "shape": 7,
+          "type": "DICT",
+          "link": null
+        },
+        {
+          "label": "user_history",
+          "name": "user_history",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "label": "img_URL",
+          "name": "img_URL",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "label": "system_prompt",
+          "name": "system_prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "system_prompt"
+          },
+          "link": 27
+        },
+        {
+          "label": "user_prompt",
+          "name": "user_prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "user_prompt"
+          },
+          "link": 29
+        }
+      ],
+      "outputs": [
+        {
+          "label": "assistant_response",
+          "name": "assistant_response",
+          "type": "STRING",
+          "links": [
+            16
+          ]
+        },
+        {
+          "label": "history",
+          "name": "history",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "label": "tool",
+          "name": "tool",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "label": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "label": "reasoning_content",
+          "name": "reasoning_content",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui_llm_party",
+        "ver": "e9724c2659f00e8f3f0252983d78e44a19a83ca8",
+        "Node name for S&R": "LLM",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "你一个强大的人工智能助手。将《》里面的内容根据输入的提示将尽可能详细的将里面的内容转换成一段81帧的慢动作视频的prompt，在输出的时候只输出转换好的英文的prompt",
+        "",
+        0.7,
+        "enable",
+        "disable",
+        "disable",
+        "enable",
+        1920,
+        "",
+        100,
+        "",
+        true,
+        true,
+        [
+          false,
+          true
+        ],
+        [
+          false,
+          true
+        ]
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 19,
+      "type": "LayerMask: LoadFlorence2Model",
+      "pos": [
+        -707.2470703125,
+        -665.1997680664062
+      ],
+      "size": [
+        344.1548767089844,
+        58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "florence2_model",
+          "name": "florence2_model",
+          "type": "FLORENCE2",
+          "links": [
+            21
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_LayerStyle_Advance",
+        "ver": "b5d2c94637a629b6294d84e45e636010ca0280a3",
+        "Node name for S&R": "LayerMask: LoadFlorence2Model"
+      },
+      "widgets_values": [
+        "Florence-2-Flux-Large"
+      ],
+      "color": "rgba(27, 80, 119, 0.7)"
+    },
+    {
+      "id": 21,
+      "type": "CR Text Concatenate",
+      "pos": [
+        180.89730834960938,
+        -393.67767333984375
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "文本1",
+          "name": "text1",
+          "shape": 7,
+          "type": "STRING",
+          "link": 24
+        },
+        {
+          "label": "文本2",
+          "name": "text2",
+          "shape": 7,
+          "type": "STRING",
+          "link": 25
+        }
+      ],
+      "outputs": [
+        {
+          "label": "字符串",
+          "name": "STRING",
+          "type": "*",
+          "links": [
+            29
+          ]
+        },
+        {
+          "label": "显示帮助",
+          "name": "show_help",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
+        "Node name for S&R": "CR Text Concatenate"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 22,
+      "type": "CR Text",
+      "pos": [
+        -365.08795166015625,
+        -954.311767578125
+      ],
+      "size": [
+        540.509765625,
+        199.2992401123047
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "文本",
+          "name": "text",
+          "type": "*",
+          "links": [
+            27
+          ]
+        },
+        {
+          "label": "显示帮助",
+          "name": "show_help",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
+        "Node name for S&R": "CR Text"
+      },
+      "widgets_values": [
+        "You are a cinematic video prompt expert. Expand a static image or user description into a professional prompt for a 5-second dynamic video scene.\n\nOutput Format:\n{Light Type}, {Light Texture}, {Time of Day}, {Shot Size}, {Composition}, {Character details and inferred motion}, {Camera Movement}, {Atmosphere}, {Color Tone}, {Visual Style}\n\nCore Rules:\n1.Lighting: Choose the light source (sunlight / artificial light / moonlight / firelight) and texture (soft / hard / sidelight / backlight / rim light)\n\n2.Time: daytime / night / dusk / sunset / sunrise / dawn\n\n3.Shot Size: close-up / medium shot / full shot / wide shot\n\n4.Action Inference: Based on the subject’s pose, gesture, or eye direction, logically infer what happens in the next 5 seconds\n\n - Hand near face → might touch or cover the face\n\n - Searching gaze → might turn head or look up\n\n - Leaning forward → might stand up or lean closer\n\n - Two people facing each other → possible physical contact\n\n5.Camera Movement: push-in / pull-back / pan / follow / orbit / handheld\n\n6.Style: e.g., indie film style, ARRI Alexa look, handheld documentary style\n\nRequirements:\nOutput length: 60–120 characters\n\nUse commas to separate elements\n\nFocus on visual-only description — no sound or dialogue\n\nActions must be natural and physically logical, as if unfolding over 5 seconds\n\nExample\nInput: A woman stands by the window, hand on the curtain\nOutput:\nSunlight, soft light, afternoon, medium-close shot, side composition, a woman in a white dress gently pulls open the curtain, sunlight spills on her face, she slightly tilts her chin upward, camera slowly pushes in, blurred city street in the background, warm tones, low saturation, art film style",
+        [
+          false,
+          true
+        ]
+      ]
+    },
+    {
+      "id": 20,
+      "type": "LayerUtility: Florence2Image2Prompt",
+      "pos": [
+        -217.8725128173828,
+        -654.7389526367188
+      ],
+      "size": [
+        362.0445251464844,
+        198
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "florence2_model",
+          "name": "florence2_model",
+          "type": "FLORENCE2",
+          "link": 21
+        },
+        {
+          "label": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "link": 20
+        }
+      ],
+      "outputs": [
+        {
+          "label": "text",
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            25
+          ]
+        },
+        {
+          "label": "preview_image",
+          "name": "preview_image",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_LayerStyle_Advance",
+        "ver": "b5d2c94637a629b6294d84e45e636010ca0280a3",
+        "Node name for S&R": "LayerUtility: Florence2Image2Prompt"
+      },
+      "widgets_values": [
+        "more detailed caption",
+        "",
+        1024,
+        3,
+        false,
+        false
+      ],
+      "color": "rgba(38, 73, 116, 0.7)"
+    },
+    {
+      "id": 16,
+      "type": "ShowText|pysssss",
+      "pos": [
+        904.0669555664062,
+        -791.0462646484375
+      ],
+      "size": [
+        611.4061279296875,
+        283.9059753417969
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "label": "字符串",
+          "name": "STRING",
+          "shape": 6,
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-custom-scripts",
+        "ver": "aac13aa7ce35b07d43633c3bbe654a38c00d74f5",
+        "Node name for S&R": "ShowText|pysssss",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "Artificial light, soft sidelight, daytime, medium shot, rule of thirds composition, a young woman in a black tweed jacket rises from her chair with a thoughtful expression, begins swaying to unheard music, camera follows her movement with a gentle orbit, warm tones, indie film style"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 18,
+      "type": "LoadImage",
+      "pos": [
+        -998.8116455078125,
+        -506.4996643066406
+      ],
+      "size": [
+        519.9432983398438,
+        504.272705078125
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "图像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            20
+          ]
+        },
+        {
+          "label": "遮罩",
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.46",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "001 (1).png",
+        "image"
+      ]
+    },
+    {
+      "id": 17,
+      "type": "CR Text",
+      "pos": [
+        -368.37213134765625,
+        -346.9616394042969
+      ],
+      "size": [
+        428.3197021484375,
+        113
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "文本",
+          "name": "text",
+          "type": "*",
+          "links": [
+            24
+          ]
+        },
+        {
+          "label": "显示帮助",
+          "name": "show_help",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
+        "Node name for S&R": "CR Text",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "一个女孩儿站起来跳舞",
+        [
+          false,
+          true
+        ]
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    }
+  ],
+  "links": [
+    [
+      14,
+      14,
+      0,
+      15,
+      0,
+      "CUSTOM"
+    ],
+    [
+      16,
+      15,
+      0,
+      16,
+      0,
+      "STRING"
+    ],
+    [
+      20,
+      18,
+      0,
+      20,
+      1,
+      "IMAGE"
+    ],
+    [
+      21,
+      19,
+      0,
+      20,
+      0,
+      "FLORENCE2"
+    ],
+    [
+      24,
+      17,
+      0,
+      21,
+      0,
+      "STRING"
+    ],
+    [
+      25,
+      20,
+      0,
+      21,
+      1,
+      "STRING"
+    ],
+    [
+      27,
+      22,
+      0,
+      15,
+      9,
+      "STRING"
+    ],
+    [
+      29,
+      21,
+      0,
+      15,
+      10,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8390545288824586,
+      "offset": [
+        1121.41291848202,
+        1054.568367967908
+      ]
+    },
+    "frontendVersion": "1.23.4",
+    "VHS_latentpreview": true,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
