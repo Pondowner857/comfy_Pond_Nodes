@@ -221,6 +221,10 @@ class AdvancedFolderLoader(BaseFolderLoader):
                 }),
                 "recursive": ("BOOLEAN", {"default": False, "label_on": "递归", "label_off": "仅当前"}),
                 "sort_by": (["名称", "日期", "大小"], {"default": "名称"}),
+                "text_mode": (["配对", "随机"], {
+                    "default": "配对",
+                    "description": "图像+文本模式下的文本选择方式"
+                }),
             },
             "optional": {
                 "previous_index": ("INT", {"default": -1}),
@@ -238,7 +242,7 @@ class AdvancedFolderLoader(BaseFolderLoader):
         self.file_lists = {}  # 缓存文件列表
     
     def load_from_folder(self, folder_path, mode, file_type, index=0, seed=-1, pattern="*", 
-                        recursive=False, sort_by="名称", previous_index=-1):
+                        recursive=False, sort_by="名称", text_mode="配对", previous_index=-1):
         """主加载函数"""
         
         # 处理可能为 None 的参数
@@ -250,15 +254,19 @@ class AdvancedFolderLoader(BaseFolderLoader):
             pattern = "*"
         if previous_index is None:
             previous_index = -1
+        if text_mode is None:
+            text_mode = "配对"
         
         # 转换中文参数为英文（内部使用）
         mode_map = {"随机": "random", "索引": "index", "顺序": "sequential"}
         file_type_map = {"图像": "image", "文本": "text", "自动": "auto", "图像+文本": "image_text"}
         sort_by_map = {"名称": "name", "日期": "date", "大小": "size"}
+        text_mode_map = {"配对": "paired", "随机": "random"}
         
         mode = mode_map.get(mode, mode)
         file_type = file_type_map.get(file_type, file_type)
         sort_by = sort_by_map.get(sort_by, sort_by)
+        text_mode = text_mode_map.get(text_mode, text_mode)
         
         # 处理图像+文本模式
         if file_type == "image_text":
@@ -307,15 +315,37 @@ class AdvancedFolderLoader(BaseFolderLoader):
         if file_type == "image_text":
             # 图像+文本模式
             image = self.load_image_with_cache(selected_file)
-            paired_text = self.find_paired_text(selected_file)
             
-            if paired_text:
-                text = paired_text
-                metadata["配对文本"] = "找到"
-                metadata["文本长度"] = len(paired_text)
+            if text_mode == "paired":
+                # 配对模式：查找对应的文本文件
+                paired_text = self.find_paired_text(selected_file)
+                
+                if paired_text:
+                    text = paired_text
+                    metadata["配对文本"] = "找到"
+                    metadata["文本长度"] = len(paired_text)
+                else:
+                    text = ""  # 没找到配对文本时返回空字符串
+                    metadata["配对文本"] = "未找到"
             else:
-                text = f"未找到 {filename} 的配对文本文件"
-                metadata["配对文本"] = "未找到"
+                # 随机模式：随机选择一个文本文件
+                text_files = self.get_files_from_folder(folder_path, "text", recursive, pattern, sort_by)
+                
+                if text_files:
+                    # 使用相同的种子确保可重复性
+                    if seed >= 0:
+                        random.seed(seed + 1)  # 使用不同的种子避免与图像选择相同
+                    random_text_file = random.choice(text_files)
+                    text_content = self.load_text_with_cache(random_text_file)
+                    text_filename = os.path.basename(random_text_file)
+                    text = text_content  # 只输出文本内容
+                    metadata["文本模式"] = "随机"
+                    metadata["文本文件"] = text_filename
+                    metadata["文本长度"] = len(text_content)
+                else:
+                    text = ""  # 没找到文本文件时返回空字符串
+                    metadata["文本模式"] = "随机"
+                    metadata["文本文件"] = "无"
             
             # 添加图像元数据
             try:
@@ -328,7 +358,7 @@ class AdvancedFolderLoader(BaseFolderLoader):
                 
         elif ext in self.supported_image_formats:
             image = self.load_image_with_cache(selected_file)
-            text = f"图像: {filename}"
+            text = ""  # 图像文件不输出文本
             
             # 添加图像元数据
             try:
@@ -343,12 +373,12 @@ class AdvancedFolderLoader(BaseFolderLoader):
                 
         elif ext in self.supported_text_formats:
             image = torch.zeros((1, 64, 64, 3))
-            text = self.load_text_with_cache(selected_file)
+            text = self.load_text_with_cache(selected_file)  # 只输出文本内容
             metadata["文本长度"] = len(text)
             metadata["行数"] = text.count('\n') + 1
         else:
             image = torch.zeros((1, 64, 64, 3))
-            text = "不支持的文件类型"
+            text = ""  # 不支持的文件类型返回空字符串
         
         return (image, text, filename, selected_index, len(files), metadata)
 
@@ -389,6 +419,10 @@ class SmartBatchLoader(BaseFolderLoader):
                     "max": 2048,
                     "step": 64,
                     "display": "slider"
+                }),
+                "text_mode": (["配对", "随机"], {
+                    "default": "配对",
+                    "description": "图像+文本模式下的文本选择方式"
                 }),
             }
         }
@@ -451,7 +485,7 @@ class SmartBatchLoader(BaseFolderLoader):
         return img
     
     def load_batch(self, folder_path, file_type, batch_size=1, start_index=0, shuffle=False, 
-                   seed=-1, group_by="无", resize_mode="无", target_size=512):
+                   seed=-1, group_by="无", resize_mode="无", target_size=512, text_mode="配对"):
         """批量加载文件"""
         
         # 处理可能为 None 的参数
@@ -465,15 +499,19 @@ class SmartBatchLoader(BaseFolderLoader):
             seed = -1
         if target_size is None:
             target_size = 512
+        if text_mode is None:
+            text_mode = "配对"
         
         # 转换中文参数为英文（内部使用）
         file_type_map = {"图像": "image", "文本": "text", "混合": "mixed", "图像+文本": "image_text"}
         group_by_map = {"无": "none", "扩展名": "extension", "前缀": "prefix", "日期": "date"}
         resize_mode_map = {"无": "none", "缩放": "resize", "裁剪": "crop", "填充": "pad"}
+        text_mode_map = {"配对": "paired", "随机": "random"}
         
         file_type = file_type_map.get(file_type, file_type)
         group_by = group_by_map.get(group_by, group_by)
         resize_mode = resize_mode_map.get(resize_mode, resize_mode)
+        text_mode = text_mode_map.get(text_mode, text_mode)
         
         # 获取文件列表
         if file_type == "mixed":
@@ -516,7 +554,17 @@ class SmartBatchLoader(BaseFolderLoader):
         
         # 处理图像+文本模式
         if file_type == "image_text":
-            for file_path in batch_files:
+            # 如果是随机模式，预先获取所有文本文件
+            text_files = []
+            if text_mode == "random":
+                text_files = self.get_files_from_folder(folder_path, "text", recursive=False)
+                if shuffle and seed >= 0:
+                    random.seed(seed + 1)  # 使用不同的种子
+                    text_files_copy = text_files.copy()
+                    random.shuffle(text_files_copy)
+                    text_files = text_files_copy
+            
+            for i, file_path in enumerate(batch_files):
                 filename = os.path.basename(file_path)
                 info = {
                     "文件名": filename,
@@ -538,15 +586,32 @@ class SmartBatchLoader(BaseFolderLoader):
                     info["宽度"] = img.width
                     info["高度"] = img.height
                     
-                    # 查找配对文本
-                    paired_text = self.find_paired_text(file_path)
-                    if paired_text:
-                        texts.append(f"[{filename}]:\n{paired_text}")
-                        info["配对文本"] = "找到"
-                        info["文本长度"] = len(paired_text)
+                    if text_mode == "paired":
+                        # 配对模式：查找配对文本
+                        paired_text = self.find_paired_text(file_path)
+                        if paired_text:
+                            texts.append(paired_text)  # 只添加文本内容
+                            info["配对文本"] = "找到"
+                            info["文本长度"] = len(paired_text)
+                        else:
+                            texts.append("")  # 没找到配对文本时添加空字符串
+                            info["配对文本"] = "未找到"
                     else:
-                        texts.append(f"[{filename}]: 未找到配对文本")
-                        info["配对文本"] = "未找到"
+                        # 随机模式：选择随机文本
+                        if text_files:
+                            # 为每个图像选择一个不同的文本文件
+                            text_index = i % len(text_files)
+                            text_file = text_files[text_index]
+                            text_content = self.load_text_with_cache(text_file)
+                            text_filename = os.path.basename(text_file)
+                            texts.append(text_content)  # 只添加文本内容
+                            info["文本模式"] = "随机"
+                            info["文本文件"] = text_filename
+                            info["文本长度"] = len(text_content)
+                        else:
+                            texts.append("")  # 没找到文本文件时添加空字符串
+                            info["文本模式"] = "随机"
+                            info["文本文件"] = "无"
                         
                 except Exception as e:
                     print(f"加载图像出错 {file_path}: {e}")
@@ -554,7 +619,7 @@ class SmartBatchLoader(BaseFolderLoader):
                         images.append(np.zeros((target_size, target_size, 3), dtype=np.float32))
                     else:
                         images.append(np.zeros((64, 64, 3), dtype=np.float32))
-                    texts.append(f"错误: {filename}")
+                    texts.append("")  # 错误时添加空字符串
                     info["错误"] = str(e)
                 
                 file_info.append(info)
@@ -615,12 +680,12 @@ class SmartBatchLoader(BaseFolderLoader):
                 }
                 
                 content = self.load_text_with_cache(file_path)
-                text_contents.append(f"[{filename}]:\n{content}")
+                text_contents.append(content)  # 只添加文本内容
                 info["文本长度"] = len(content)
                 file_info.append(info)
             
             # 合并文本内容
-            texts = text_contents if text_contents else ["未找到文本文件"]
+            texts = text_contents if text_contents else [""]
             
             # 如果没有图像，创建一个空白图像
             if not images:
@@ -652,7 +717,7 @@ class SmartBatchLoader(BaseFolderLoader):
                         
                         img_array = np.array(img).astype(np.float32) / 255.0
                         images.append(img_array)
-                        texts.append(filename)
+                        texts.append("")  # 图像文件不输出文本
                         info["宽度"] = img.width
                         info["高度"] = img.height
                     except Exception as e:
@@ -662,7 +727,7 @@ class SmartBatchLoader(BaseFolderLoader):
                             images.append(np.zeros((target_size, target_size, 3), dtype=np.float32))
                         else:
                             images.append(np.zeros((64, 64, 3), dtype=np.float32))
-                        texts.append(f"错误: {filename}")
+                        texts.append("")  # 错误时返回空字符串
                         info["错误"] = str(e)
                 
                 elif ext in self.supported_text_formats:
@@ -673,7 +738,7 @@ class SmartBatchLoader(BaseFolderLoader):
                         images.append(np.zeros((64, 64, 3), dtype=np.float32))
                     
                     content = self.load_text_with_cache(file_path)
-                    texts.append(f"[{filename}]:\n{content}")
+                    texts.append(content)  # 只添加文本内容
                     info["文本长度"] = len(content)
                 
                 file_info.append(info)
@@ -716,8 +781,13 @@ class SmartBatchLoader(BaseFolderLoader):
             # 图像+文本模式
             combined_text = "\n---\n".join(texts) if texts else ""
             stats["模式"] = "图像+文本"
-            stats["配对成功数"] = len([f for f in file_info if f.get("配对文本") == "找到"])
-            stats["配对失败数"] = len([f for f in file_info if f.get("配对文本") == "未找到"])
+            if text_mode == "paired":
+                stats["文本模式"] = "配对"
+                stats["配对成功数"] = len([f for f in file_info if f.get("配对文本") == "找到"])
+                stats["配对失败数"] = len([f for f in file_info if f.get("配对文本") == "未找到"])
+            else:
+                stats["文本模式"] = "随机"
+                stats["文本文件数"] = len([f for f in file_info if f.get("文本文件") and f.get("文本文件") != "无"])
         else:
             # 非混合模式，保持原有逻辑
             combined_text = "\n---\n".join(texts) if texts else ""
