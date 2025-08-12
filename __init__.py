@@ -31,6 +31,8 @@ from .nodes.Batch_Loader import NODE_CLASS_MAPPINGS as Batch_Loader_MAPPINGS, NO
 from .nodes.WanVideoReset import NODE_CLASS_MAPPINGS as WanVideoReset_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as WanVideoReset_DISPLAY_NAME_MAPPINGS
 from .nodes.mask_color import NODE_CLASS_MAPPINGS as mask_color_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as mask_color_DISPLAY_NAME_MAPPINGS
 from .nodes.Wan22_Prompt import NODE_CLASS_MAPPINGS as Wan22_Prompt_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as Wan22_Prompt_DISPLAY_NAME_MAPPINGS
+from .nodes.ImagePad import NODE_CLASS_MAPPINGS as ImagePad_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as ImagePad_DISPLAY_NAME_MAPPINGS
+from .nodes.QwenPrompt import NODE_CLASS_MAPPINGS as QwenPrompt_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as QwenPrompt_DISPLAY_NAME_MAPPINGS
 # 合并所有节点类映射
 NODE_CLASS_MAPPINGS = {
     **yoloCrop_MAPPINGS,
@@ -64,7 +66,9 @@ NODE_CLASS_MAPPINGS = {
     **Batch_Loader_MAPPINGS,
     **WanVideoReset_MAPPINGS,
     **mask_color_MAPPINGS,
-    **Wan22_Prompt_MAPPINGS
+    **Wan22_Prompt_MAPPINGS,
+    **ImagePad_MAPPINGS,
+    **QwenPrompt_MAPPINGS
 }
 
 # 合并所有节点显示名称映射
@@ -100,7 +104,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **Batch_Loader_DISPLAY_NAME_MAPPINGS,
     **WanVideoReset_DISPLAY_NAME_MAPPINGS,
     **mask_color_DISPLAY_NAME_MAPPINGS,
-    **Wan22_Prompt_DISPLAY_NAME_MAPPINGS
+    **Wan22_Prompt_DISPLAY_NAME_MAPPINGS,
+    **ImagePad_DISPLAY_NAME_MAPPINGS,
+    **QwenPrompt_DISPLAY_NAME_MAPPINGS
 }
 
 # 导出
