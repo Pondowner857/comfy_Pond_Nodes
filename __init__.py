@@ -33,6 +33,10 @@ from .nodes.mask_color import NODE_CLASS_MAPPINGS as mask_color_MAPPINGS, NODE_D
 from .nodes.Wan22_Prompt import NODE_CLASS_MAPPINGS as Wan22_Prompt_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as Wan22_Prompt_DISPLAY_NAME_MAPPINGS
 from .nodes.ImagePad import NODE_CLASS_MAPPINGS as ImagePad_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as ImagePad_DISPLAY_NAME_MAPPINGS
 from .nodes.QwenPrompt import NODE_CLASS_MAPPINGS as QwenPrompt_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as QwenPrompt_DISPLAY_NAME_MAPPINGS
+from .nodes.ImageBorder import NODE_CLASS_MAPPINGS as ImageBorder_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as ImageBorder_DISPLAY_NAME_MAPPINGS
+from .nodes.maskSolid import NODE_CLASS_MAPPINGS as maskSolid_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as maskSolid_DISPLAY_NAME_MAPPINGS
+from .nodes.CropPaste import NODE_CLASS_MAPPINGS as CropPaste_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as CropPaste_DISPLAY_NAME_MAPPINGS
+from .nodes.DigitalJudgment import NODE_CLASS_MAPPINGS as DigitalJudgment_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as DigitalJudgment_DISPLAY_NAME_MAPPINGS
 # 合并所有节点类映射
 NODE_CLASS_MAPPINGS = {
     **yoloCrop_MAPPINGS,
@@ -68,7 +72,11 @@ NODE_CLASS_MAPPINGS = {
     **mask_color_MAPPINGS,
     **Wan22_Prompt_MAPPINGS,
     **ImagePad_MAPPINGS,
-    **QwenPrompt_MAPPINGS
+    **QwenPrompt_MAPPINGS,
+    **ImageBorder_MAPPINGS,
+    **maskSolid_MAPPINGS,
+    **CropPaste_MAPPINGS,
+    **DigitalJudgment_MAPPINGS
 }
 
 # 合并所有节点显示名称映射
@@ -106,7 +114,11 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **mask_color_DISPLAY_NAME_MAPPINGS,
     **Wan22_Prompt_DISPLAY_NAME_MAPPINGS,
     **ImagePad_DISPLAY_NAME_MAPPINGS,
-    **QwenPrompt_DISPLAY_NAME_MAPPINGS
+    **QwenPrompt_DISPLAY_NAME_MAPPINGS,
+    **ImageBorder_DISPLAY_NAME_MAPPINGS,
+    **maskSolid_DISPLAY_NAME_MAPPINGS,
+    **CropPaste_DISPLAY_NAME_MAPPINGS,
+    **DigitalJudgment_DISPLAY_NAME_MAPPINGS
 }
 
 # 导出

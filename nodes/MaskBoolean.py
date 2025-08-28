@@ -4,16 +4,6 @@ from typing import Tuple, List, Optional, Union
 import time
 
 class MaskAlignBooleanNode:
-    """
-    遮罩对齐布尔运算节点 - 基于Pond合并插件的对齐技术
-    
-    Features:
-    - 🎯 9种对齐方式（包括四角对齐）
-    - 🔧 完整的布尔运算支持
-    - 📐 智能画布尺寸计算
-    - ⚡ GPU加速边界检测
-    - 📊 详细运算统计
-    """
     
     @classmethod
     def INPUT_TYPES(cls):
@@ -218,7 +208,7 @@ class MaskAlignBooleanNode:
         """主要的对齐布尔运算函数"""
         start_time = time.time()
         
-        print(f"🎯 开始遮罩对齐布尔运算: {布尔运算}")
+        # print(f"🎯 开始遮罩对齐布尔运算: {布尔运算}")
         
         # 翻译参数
         alignment = self.translate_alignment(对齐方式)
@@ -230,7 +220,7 @@ class MaskAlignBooleanNode:
         # 统一设备
         target_device = 遮罩A.device
         if 遮罩B.device != target_device:
-            print(f"⚠️ 警告: 遮罩B在不同设备上，正在移动到设备 {target_device}")
+            # print(f"⚠️ 警告: 遮罩B在不同设备上，正在移动到设备 {target_device}")
             遮罩B = 遮罩B.to(target_device)
         
         # 标准化格式
@@ -251,15 +241,15 @@ class MaskAlignBooleanNode:
         bounds_a = self.get_mask_bounds_optimized(mask_a, 阈值)
         bounds_b = self.get_mask_bounds_optimized(mask_b, 阈值)
         
-        print(f"📐 遮罩A边界: {bounds_a}, 遮罩B边界: {bounds_b}")
+        # print(f"📐 遮罩A边界: {bounds_a}, 遮罩B边界: {bounds_b}")
         
         # 检查有效性
         if bounds_a[2] == 0 or bounds_a[3] == 0:
-            print(f"⚠️ 警告: 遮罩A没有有效像素，使用整体尺寸")
+            # print(f"⚠️ 警告: 遮罩A没有有效像素，使用整体尺寸")
             bounds_a = (0, 0, mask_a.shape[1], mask_a.shape[0])
         
         if bounds_b[2] == 0 or bounds_b[3] == 0:
-            print(f"⚠️ 警告: 遮罩B没有有效像素，使用整体尺寸")
+            # print(f"⚠️ 警告: 遮罩B没有有效像素，使用整体尺寸")
             bounds_b = (0, 0, mask_b.shape[1], mask_b.shape[0])
         
         # 计算对齐
@@ -269,8 +259,8 @@ class MaskAlignBooleanNode:
         )
         
         canvas_w, canvas_h = canvas_size
-        print(f"📐 画布尺寸: {canvas_w} × {canvas_h}")
-        print(f"📍 偏移 - A: {offset_a}, B: {offset_b}")
+        # print(f"📐 画布尺寸: {canvas_w} × {canvas_h}")
+        # print(f"📍 偏移 - A: {offset_a}, B: {offset_b}")
         
         # 创建对齐后的遮罩
         aligned_mask_a = torch.zeros((canvas_h, canvas_w), dtype=mask_a.dtype, device=target_device)
@@ -319,7 +309,7 @@ class MaskAlignBooleanNode:
 平均处理时间: {self.stats["avg_processing_time"]:.3f} 秒
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"""
         
-        print(info)
+        # print(info)
         
         # 根据输出模式返回不同内容
         if 输出模式 == "对齐预览":

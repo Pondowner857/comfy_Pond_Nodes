@@ -162,11 +162,6 @@ class MaskSizeAlign:
         base_bounds = self.get_mask_bounds(base_mask)
         mask2_bounds = self.get_mask_bounds(mask2)
         
-        print(f"基准遮罩尺寸: {base_height}x{base_width}")
-        print(f"基准遮罩内容边界: x={base_bounds[0]}, y={base_bounds[1]}, w={base_bounds[2]}, h={base_bounds[3]}")
-        print(f"遮罩2尺寸: {mask2_height}x{mask2_width}")
-        print(f"遮罩2内容边界: x={mask2_bounds[0]}, y={mask2_bounds[1]}, w={mask2_bounds[2]}, h={mask2_bounds[3]}")
-        print(f"对齐方式: {对齐方式}")
         
         # 执行对齐
         aligned_mask2 = self.align_mask_with_position(
@@ -181,8 +176,6 @@ class MaskSizeAlign:
                 基准遮罩 = 基准遮罩.unsqueeze(0)
                 aligned_mask2 = aligned_mask2.unsqueeze(0)
         
-        print(f"输出基准遮罩尺寸: {基准遮罩.shape}")
-        print(f"输出对齐遮罩尺寸: {aligned_mask2.shape}")
         
         return (基准遮罩, aligned_mask2)
 
@@ -268,7 +261,6 @@ class MaskSizeAlignAdvanced:
                 aligned = self.apply_offset(aligned, X轴偏移, Y轴偏移)
             
             aligned_masks.append(aligned)
-            print(f"已对齐遮罩{i+2}")
         
         # 创建合并遮罩（所有对齐后的遮罩的最大值）
         merged = 基准遮罩.clone()

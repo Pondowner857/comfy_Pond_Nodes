@@ -202,7 +202,6 @@ class MaskMultiAlignMergeNode:
             if mask is not None:
                 all_masks.append(mask)
         
-        print(f"📦 开始处理 {len(all_masks)} 个遮罩的合并操作（以第一个遮罩为基准）")
         
         # 翻译参数
         alignment = self.translate_alignment(对齐方式)
@@ -220,7 +219,6 @@ class MaskMultiAlignMergeNode:
         target_device = all_masks[0].device
         for i in range(1, len(all_masks)):
             if all_masks[i].device != target_device:
-                print(f"⚠️ 警告: 遮罩{i+1}在不同设备上，正在移动到设备 {target_device}")
                 all_masks[i] = all_masks[i].to(target_device)
         
         # 标准化所有遮罩格式
@@ -236,7 +234,6 @@ class MaskMultiAlignMergeNode:
         
         # 检查基准遮罩有效性
         if base_bounds[2] == 0 or base_bounds[3] == 0:
-            print(f"⚠️ 警告: 基准遮罩没有有效像素，使用整体尺寸")
             base_bounds = (0, 0, base_mask.shape[1], base_mask.shape[0])
         
         # 计算所有遮罩相对于基准遮罩的偏移量
@@ -251,7 +248,6 @@ class MaskMultiAlignMergeNode:
             current_bounds = self.get_mask_bounds_optimized(current_mask)
             
             if current_bounds[2] == 0 or current_bounds[3] == 0:
-                print(f"⚠️ 警告: 遮罩{i+1}没有有效像素，使用整体尺寸")
                 current_bounds = (0, 0, current_mask.shape[1], current_mask.shape[0])
             
             # 计算相对于基准遮罩的偏移
@@ -284,12 +280,10 @@ class MaskMultiAlignMergeNode:
                 # 基准遮罩直接放置
                 self._place_mask_optimized(canvas, mask_2d, 
                                          adjusted_offset_x, adjusted_offset_y, "replace")
-                print(f"✅ 放置基准遮罩，位置: ({adjusted_offset_x}, {adjusted_offset_y})")
             else:
                 # 其他遮罩使用指定的合并模式
                 self._place_mask_optimized(canvas, mask_2d, 
                                          adjusted_offset_x, adjusted_offset_y, merge_mode)
-                print(f"✅ 合并遮罩{i+1}，位置: ({adjusted_offset_x}, {adjusted_offset_y})，使用{合并模式}")
         
         # 调整输出格式
         result_mask = canvas
@@ -308,21 +302,7 @@ class MaskMultiAlignMergeNode:
             / self.stats["total_merges"]
         )
         self.stats["last_canvas_size"] = (canvas_w, canvas_h)
-        
-        print(f"""🎯 多遮罩合并完成统计:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📐 最终画布尺寸: {canvas_w} × {canvas_h} 像素
-🎯 对齐方式: {对齐方式}（相对于基准遮罩）
-🔧 合并模式: {合并模式}
-⏱️ 处理时间: {processing_time:.3f} 秒
-📦 合并遮罩数量: {len(all_masks)} 个
-📍 偏移设置: X({X轴偏移}) Y({Y轴偏移})
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 历史统计:
-总处理次数: {self.stats["total_merges"]} 次
-平均处理时间: {self.stats["avg_processing_time"]:.3f} 秒
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━""")
-        
+               
         return (result_mask,)
 
 
