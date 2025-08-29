@@ -37,6 +37,7 @@ from .nodes.ImageBorder import NODE_CLASS_MAPPINGS as ImageBorder_MAPPINGS, NODE
 from .nodes.maskSolid import NODE_CLASS_MAPPINGS as maskSolid_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as maskSolid_DISPLAY_NAME_MAPPINGS
 from .nodes.CropPaste import NODE_CLASS_MAPPINGS as CropPaste_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as CropPaste_DISPLAY_NAME_MAPPINGS
 from .nodes.DigitalJudgment import NODE_CLASS_MAPPINGS as DigitalJudgment_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as DigitalJudgment_DISPLAY_NAME_MAPPINGS
+from .nodes.Prompt import NODE_CLASS_MAPPINGS as Prompt_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as Prompt_DISPLAY_NAME_MAPPINGS
 # 合并所有节点类映射
 NODE_CLASS_MAPPINGS = {
     **yoloCrop_MAPPINGS,
@@ -76,7 +77,8 @@ NODE_CLASS_MAPPINGS = {
     **ImageBorder_MAPPINGS,
     **maskSolid_MAPPINGS,
     **CropPaste_MAPPINGS,
-    **DigitalJudgment_MAPPINGS
+    **DigitalJudgment_MAPPINGS,
+    **Prompt_MAPPINGS
 }
 
 # 合并所有节点显示名称映射
@@ -118,7 +120,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **ImageBorder_DISPLAY_NAME_MAPPINGS,
     **maskSolid_DISPLAY_NAME_MAPPINGS,
     **CropPaste_DISPLAY_NAME_MAPPINGS,
-    **DigitalJudgment_DISPLAY_NAME_MAPPINGS
+    **DigitalJudgment_DISPLAY_NAME_MAPPINGS,
+    **Prompt_DISPLAY_NAME_MAPPINGS
 }
 
 # 导出
