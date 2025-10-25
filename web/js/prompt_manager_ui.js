@@ -20,6 +20,61 @@ const NEGATIVE_PRESETS = [
     { name: "内容限制", text: "nsfw, nude" }
 ];
 
+// ==================== 本地存储管理 ====================
+const LocalStorage = {
+    getNodeData(nodeType) {
+        const stored = localStorage.getItem('prompt_manager_node_data');
+        const allData = stored ? JSON.parse(stored) : {};
+        return allData[nodeType] || null;
+    },
+    
+    saveNodeData(nodeType, prompts) {
+        const stored = localStorage.getItem('prompt_manager_node_data');
+        const allData = stored ? JSON.parse(stored) : {};
+        allData[nodeType] = {
+            prompts: prompts,
+            savedAt: new Date().toISOString(),
+            date: new Date().toLocaleString('zh-CN')
+        };
+        localStorage.setItem('prompt_manager_node_data', JSON.stringify(allData));
+    },
+    
+    deleteNodeData(nodeType) {
+        const stored = localStorage.getItem('prompt_manager_node_data');
+        const allData = stored ? JSON.parse(stored) : {};
+        delete allData[nodeType];
+        localStorage.setItem('prompt_manager_node_data', JSON.stringify(allData));
+    }
+};
+
+// 显示提示消息
+function showToast(message, color = '#27ae60', duration = 2000) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${color};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        z-index: 10002;
+        font-size: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.transition = 'opacity 0.3s';
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                document.body.removeChild(toast);
+            }
+        }, 300);
+    }, duration);
+}
+
 function createModalEditor(node) {
     const overlay = document.createElement('div');
     overlay.style.cssText = `
@@ -79,8 +134,116 @@ function createModalEditor(node) {
     closeBtn.onmouseover = () => closeBtn.style.opacity = '0.7';
     closeBtn.onmouseout = () => closeBtn.style.opacity = '1';
     closeBtn.onclick = () => {
-        document.body.removeChild(overlay);
-        node.updateSimpleUI();
+        // 显示保存确认对话框
+        const confirmDialog = document.createElement('div');
+        confirmDialog.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a2332;
+            border: 2px solid #2a5a8a;
+            border-radius: 12px;
+            padding: 24px;
+            z-index: 10002;
+            min-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        `;
+        
+        const dialogTitle = document.createElement('h3');
+        dialogTitle.textContent = '💾 保存提示';
+        dialogTitle.style.cssText = `
+            margin: 0 0 16px 0;
+            color: #fff;
+            font-size: 18px;
+        `;
+        
+        const dialogText = document.createElement('p');
+        dialogText.textContent = '是否保存当前编辑的Prompt数据？保存后下次打开会自动加载。';
+        dialogText.style.cssText = `
+            margin: 0 0 20px 0;
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.6;
+        `;
+        
+        const buttonGroup = document.createElement('div');
+        buttonGroup.style.cssText = `
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        `;
+        
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = '💾 保存';
+        saveBtn.style.cssText = `
+            padding: 10px 20px;
+            background: #27ae60;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        `;
+        saveBtn.onmouseover = () => saveBtn.style.background = '#229954';
+        saveBtn.onmouseout = () => saveBtn.style.background = '#27ae60';
+        saveBtn.onclick = () => {
+            // 保存节点数据
+            const nodeType = 'CustomPromptManagerWithNegative';
+            LocalStorage.saveNodeData(nodeType, node.prompts);
+            document.body.removeChild(confirmDialog);
+            document.body.removeChild(overlay);
+            node.updateSimpleUI();
+            showToast('✓ 已保存，下次打开将自动加载', '#27ae60');
+        };
+        
+        const noSaveBtn = document.createElement('button');
+        noSaveBtn.textContent = '不保存';
+        noSaveBtn.style.cssText = `
+            padding: 10px 20px;
+            background: #95a5a6;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        `;
+        noSaveBtn.onmouseover = () => noSaveBtn.style.background = '#7f8c8d';
+        noSaveBtn.onmouseout = () => noSaveBtn.style.background = '#95a5a6';
+        noSaveBtn.onclick = () => {
+            document.body.removeChild(confirmDialog);
+            document.body.removeChild(overlay);
+            node.updateSimpleUI();
+        };
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = '取消';
+        cancelBtn.style.cssText = `
+            padding: 10px 20px;
+            background: #e74c3c;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        `;
+        cancelBtn.onmouseover = () => cancelBtn.style.background = '#c0392b';
+        cancelBtn.onmouseout = () => cancelBtn.style.background = '#e74c3c';
+        cancelBtn.onclick = () => {
+            document.body.removeChild(confirmDialog);
+        };
+        
+        buttonGroup.appendChild(saveBtn);
+        buttonGroup.appendChild(noSaveBtn);
+        buttonGroup.appendChild(cancelBtn);
+        
+        confirmDialog.appendChild(dialogTitle);
+        confirmDialog.appendChild(dialogText);
+        confirmDialog.appendChild(buttonGroup);
+        document.body.appendChild(confirmDialog);
     };
     
     header.appendChild(title);
@@ -546,7 +709,15 @@ app.registerExtension({
             nodeType.prototype.onNodeCreated = function() {
                 const r = onNodeCreated ? onNodeCreated.apply(this, arguments) : undefined;
                 
-                this.prompts = [];
+                // 尝试从localStorage加载保存的数据
+                const nodeTypeName = 'CustomPromptManagerWithNegative';
+                const savedData = LocalStorage.getNodeData(nodeTypeName);
+                if (savedData && savedData.prompts) {
+                    this.prompts = savedData.prompts;
+                    console.log(`[Prompt Manager] 已自动加载保存的数据 (${this.prompts.length}项)`);
+                } else {
+                    this.prompts = [];
+                }
                 
                 setTimeout(() => {
                     if (this.widgets) {
