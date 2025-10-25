@@ -1,29 +1,45 @@
 # 🐳 Pond Nodes for ComfyUI
 
-**Version 1.0.6** - Latest Update
+**Version 1.0.7** - Latest Update
 
 [English](#english) | [中文](#chinese)
 
 ---
 
-## 🔄 Recent Updates (v1.0.6)
+## 🔄 Recent Updates (v1.0.7)
 
 ### ✨ New Features
-- **🛠️ Math Tools**: Added comprehensive mathematical operation nodes including multi-number comparison, aspect ratio calculator, and basic math operations
-- **🎬 Video Processing**: New video frame extraction nodes with multiple extraction modes (index, percentage, time-based)
-- **🎭 Pose & Clothing Selection**: Rich tag selection system for human poses and clothing with batch generation capabilities
-- **💻 Hardware Monitoring**: Real-time system monitoring service for CPU, GPU, and memory usage
-- **🌐 Enhanced Web Interface**: Added JavaScript components for better user interaction
+- **📝 Prompt Manager**: Advanced prompt management system with positive/negative prompt separation and weight control
+- **🎨 Image Filters**: Comprehensive image filter nodes with brightness, contrast, saturation, sharpness, hue shift, blur, temperature, and gamma adjustments
+- **🌈 HDR & Color**: Professional color grading nodes including HDR effects, skin enhancement, artistic effects, and selective color adjustment
+- **📂 Batch Loading**: Advanced folder loader and smart batch loader with caching, multi-format support, and flexible file selection modes
+- **🖼️ Image Processing**: New image padding, border removal, and crop-paste utilities
+- **🔍 YOLO v11 Support**: Dedicated YOLOv11 detection and processing nodes
+- **🎭 Mask Tools**: Enhanced mask solidification and color processing capabilities
+- **📊 Prompt Templates**: Specialized prompt nodes for different AI models (Wan2.2, Qwen, etc.)
 
 ### 🔧 Improvements
-- Updated dependency requirements with new optional packages
-- Enhanced error handling across all nodes
-- Improved documentation with detailed usage guides
-- Better memory management and performance optimization
+- Enhanced file loading with intelligent caching system
+- Added support for paired image-text loading
+- Improved batch processing with resize and grouping options
+- Better Chinese encoding support for text files
+- Web UI enhancements for prompt management
 
-### ❌ Removed Features
-- Removed BatchWatermark node (deprecated)
-- Removed aged_damaged_effect node (deprecated)
+### 📦 New Nodes (v1.0.7)
+- Prompt Manager (🐳Prompt管理器)
+- Image Filter Adjustment (🐳滤镜调节 / 🐳滤镜调节V2)
+- Color Grading (🐳色彩平衡)
+- HDR Effect (🐳HDR)
+- Skin Enhancement (🐳人像美化)
+- Artistic Effects (🐳艺术效果)
+- Selective Color (🐳色彩范围)
+- Folder Loader (🐳文件夹加载)
+- Batch Loader (🐳批量加载)
+- Image Padding (🐳图像填充)
+- Border Remover (🐳边框处理)
+- Mask Solidifier (🐳遮罩虚实)
+- Crop Paste Back (🐳裁剪粘贴回)
+- YOLO v11 Crop/Paste nodes
 
 ---
 
@@ -90,6 +106,26 @@
 - 💻 **硬件监控**：
   - 硬件监控器：实时监控CPU、GPU、内存使用情况，优化工作流性能
 
+- 📝 **提示词管理**：
+  - 提示词管理器：支持正负面提示词分离管理，权重控制，动态提示词数量调整
+  - 专业模板：支持Wan2.2、Qwen等多种AI模型的专业提示词模板
+
+- 🎨 **图像滤镜**：
+  - 基础滤镜：亮度、对比度、饱和度、锐度、色调、模糊、色温、伽马调整
+  - 高级滤镜：晕影、色差、噪点、胶片颗粒、泛光等电影级效果
+
+- 🌈 **颜色处理**：
+  - 色彩平衡：专业高光、中间调、阴影分区调色
+  - HDR效果：支持多种色调映射算法，细节增强，局部对比度调整
+  - 人像美化：智能磨皮、美白、红润度、去瑕疵、眼睛增强、牙齿美白
+  - 艺术效果：油画、水彩、素描、漫画、印象派、点彩画、版画、马赛克等8种艺术风格
+  - 选择性颜色：针对特定颜色范围进行精确调整
+
+- 📂 **批量处理**：
+  - 文件夹加载器：支持图像、文本、图像+文本配对加载，智能缓存
+  - 批量加载器：支持文件分组、打乱、调整大小、多种排序方式
+  - 多格式支持：自动识别和处理多种图像和文本格式
+
 ### 📂 节点文件与功能对应
 
 本插件包含以下Python模块文件，每个文件实现了特定的功能节点：
@@ -123,6 +159,24 @@
 | **PoseSelector.py** | 🐳姿势选择器, 🐳简单姿势选择器, 🐳批量姿势生成器 | 人体姿势标签选择和批量生成工具 |
 | **Clothing_Selector.py** | 🐳服装选择器, 🐳简单服装选择器, 🐳批量服装生成器, 🐳服装穿搭建议 | 服装标签选择和穿搭建议工具 |
 | **hardware_monitor.py** | 硬件监控服务 | 实时监控系统硬件状态，为其他节点提供性能参考 |
+| **Prompt_manager.py** | 🐳Prompt管理器 | 支持正负面提示词分离管理，权重控制和动态提示词调整 |
+| **image_filter.py** | 🐳滤镜调节, 🐳滤镜调节V2 | 基础和高级图像滤镜效果，支持多种调整参数和艺术效果 |
+| **HDR.py** | 🐳色彩平衡, 🐳HDR, 🐳人像美化, 🐳艺术效果, 🐳色彩范围 | 专业颜色处理节点集，包含HDR、人像美化和艺术风格化效果 |
+| **Batch_Loader.py** | 🐳文件夹加载, 🐳批量加载 | 高级文件夹和批量文件加载器，支持缓存和多种加载模式 |
+| **ImagePad.py** | 🐳图像填充 | 根据参考图像调整大小并填充，支持多种对齐和填充模式 |
+| **ImageBorder.py** | 🐳边框处理 | 智能移除图像边框，支持透明度检测和内容裁剪 |
+| **maskSolid.py** | 🐳遮罩虚实 | 将遮罩转换为实心（二值化），增强遮罩效果 |
+| **CropPaste.py** | 🐳裁剪粘贴回 | 将裁剪后的图像智能粘贴回原图指定位置 |
+| **yoloCropV11.py** | 🐳YOLO v11检测裁剪 | 使用YOLO v11模型进行目标检测和裁剪 |
+| **yoloPasteV11.py** | 🐳YOLO v11图像拼接 | 使用YOLO v11检测结果进行智能图像拼接 |
+| **Wan22_Prompt.py** | 🐳Wan2.2提示词 | Wan2.2模型专用的提示词处理节点 |
+| **QwenPrompt.py** | 🐳Qwen提示词 | Qwen模型专用的提示词处理节点 |
+| **Prompt.py** | 🐳提示词 | 通用提示词处理和管理节点 |
+| **mask_color.py** | 🐳遮罩颜色 | 遮罩颜色处理和转换工具 |
+| **WanVideoReset.py** | 🐳视频重置 | 视频序列重置和处理工具 |
+| **DigitalJudgment.py** | 🐳数字判断 | 数值比较和逻辑判断工具 |
+| **iphone.py** | 🐳iPhone效果 | iPhone相机风格效果处理 |
+| **maskBbox.py** | 🐳遮罩边界框 | 从遮罩提取边界框信息 |
 
 ### 📋 依赖要求
 
@@ -248,6 +302,26 @@ This plugin collection includes various practical nodes to help you with:
 - 💻 **Hardware Monitoring**:
   - Hardware Monitor: Real-time monitoring of CPU, GPU, memory usage for workflow performance optimization
 
+- 📝 **Prompt Management**:
+  - Prompt Manager: Advanced prompt management with positive/negative prompt separation, weight control, and dynamic prompt adjustments
+  - Professional Templates: Specialized prompt nodes for various AI models (Wan2.2, Qwen, etc.)
+
+- 🎨 **Image Filters**:
+  - Basic Filters: Brightness, contrast, saturation, sharpness, hue shift, blur, temperature, and gamma adjustments
+  - Advanced Filters: Vignette, chromatic aberration, noise, film grain, bloom effects
+
+- 🌈 **Color Processing**:
+  - Color Grading: Professional highlight, midtone, shadow color adjustment
+  - HDR Effects: Multiple tone mapping algorithms, detail enhancement, local contrast adjustment
+  - Skin Enhancement: Intelligent skin smoothing, whitening, blushing, blemish removal, eye enhancement, teeth whitening
+  - Artistic Effects: 8 artistic styles including oil painting, watercolor, sketch, cartoon, impressionism, pointillism, engraving, mosaic
+  - Selective Color: Precise adjustment for specific color ranges
+
+- 📂 **Batch Processing**:
+  - Folder Loader: Support image, text, and paired image-text loading with intelligent caching
+  - Batch Loader: File grouping, shuffle, resize, multiple sorting modes
+  - Multi-Format Support: Auto-detect and process various image and text formats
+
 ### 📂 Node Files and Function Mapping
 
 This plugin contains the following Python module files, each implementing specific function nodes:
@@ -281,6 +355,24 @@ This plugin contains the following Python module files, each implementing specif
 | **PoseSelector.py** | 🐳Pose Selector, 🐳Simple Pose Selector, 🐳Batch Pose Generator | Human pose tag selection and batch generation tools |
 | **Clothing_Selector.py** | 🐳Clothing Selector, 🐳Simple Clothing Selector, 🐳Batch Clothing Generator, 🐳Clothing Outfit Suggestion | Clothing tag selection and outfit suggestion tools |
 | **hardware_monitor.py** | Hardware Monitor Service | Real-time system hardware monitoring service for performance reference |
+| **Prompt_manager.py** | 🐳Prompt Manager | Advanced prompt management with positive/negative separation, weight control, and dynamic adjustments |
+| **image_filter.py** | 🐳Image Filter, 🐳Image Filter V2 | Basic and advanced image filter effects with multiple adjustment parameters |
+| **HDR.py** | 🐳Color Grading, 🐳HDR, 🐳Skin Enhancement, 🐳Artistic Effects, 🐳Selective Color | Professional color processing node set including HDR, portrait beautification, and artistic stylization |
+| **Batch_Loader.py** | 🐳Folder Loader, 🐳Batch Loader | Advanced folder and batch file loader with caching and multiple loading modes |
+| **ImagePad.py** | 🐳Image Padding | Resize and pad images based on reference image with multiple alignment modes |
+| **ImageBorder.py** | 🐳Border Remover | Intelligently remove image borders with transparency detection and content cropping |
+| **maskSolid.py** | 🐳Mask Solidifier | Convert masks to solid (binarize) for enhanced mask effects |
+| **CropPaste.py** | 🐳Crop Paste Back | Intelligently paste cropped images back to original position |
+| **yoloCropV11.py** | 🐳YOLO v11 Detection Crop | Object detection and cropping using YOLO v11 models |
+| **yoloPasteV11.py** | 🐳YOLO v11 Image Paste | Intelligent image pasting using YOLO v11 detection results |
+| **Wan22_Prompt.py** | 🐳Wan2.2 Prompt | Specialized prompt processing for Wan2.2 model |
+| **QwenPrompt.py** | 🐳Qwen Prompt | Specialized prompt processing for Qwen model |
+| **Prompt.py** | 🐳Prompt | Universal prompt processing and management node |
+| **mask_color.py** | 🐳Mask Color | Mask color processing and conversion tools |
+| **WanVideoReset.py** | 🐳Video Reset | Video sequence reset and processing tools |
+| **DigitalJudgment.py** | 🐳Digital Judgment | Numerical comparison and logic judgment tools |
+| **iphone.py** | 🐳iPhone Effect | iPhone camera style effect processing |
+| **maskBbox.py** | 🐳Mask Bounding Box | Extract bounding box information from masks |
 
 ### 📋 Dependencies
 
@@ -539,8 +631,8 @@ If you encounter any issues or have suggestions:
 
 ### 🏷️ Tags
 
-ComfyUI, Custom Nodes, Image Processing, Mask Operations, YOLO, Object Detection, Video Processing, Math Tools, Pose Selection, Clothing Tags, Hardware Monitoring, AI Tools
+ComfyUI, Custom Nodes, Image Processing, Mask Operations, YOLO, Object Detection, Video Processing, Math Tools, Pose Selection, Clothing Tags, Hardware Monitoring, AI Tools, Prompt Management, Image Filters, HDR, Color Grading, Batch Loading, Artistic Effects, Skin Enhancement
 
 ---
 
-*Note: This documentation reflects the current state after adding new features in version 1.0.6. All node names, parameters, and descriptions are available in both Chinese and English for international users.* 
+*Note: This documentation reflects the current state after adding new features in version 1.0.7. All node names, parameters, and descriptions are available in both Chinese and English for international users.* 

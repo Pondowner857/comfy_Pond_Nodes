@@ -41,6 +41,7 @@ from .nodes.Prompt import NODE_CLASS_MAPPINGS as Prompt_MAPPINGS, NODE_DISPLAY_N
 from .nodes.yoloCropV11 import NODE_CLASS_MAPPINGS as yoloCropV11_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as yoloCropV11_DISPLAY_NAME_MAPPINGS
 from .nodes.yoloPasteV11 import NODE_CLASS_MAPPINGS as yoloPasteV11_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as yoloPasteV11_DISPLAY_NAME_MAPPINGS
 from .nodes.iphone import NODE_CLASS_MAPPINGS as iphone_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as iphone_DISPLAY_NAME_MAPPINGS
+from .nodes.Prompt_manager import NODE_CLASS_MAPPINGS as Prompt_manager_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as Prompt_manager_DISPLAY_NAME_MAPPINGS
 # 合并所有节点类映射
 NODE_CLASS_MAPPINGS = {
     **yoloCrop_MAPPINGS,
@@ -84,7 +85,8 @@ NODE_CLASS_MAPPINGS = {
     **Prompt_MAPPINGS,
     **yoloCropV11_MAPPINGS,
     **yoloPasteV11_MAPPINGS,
-    **iphone_MAPPINGS
+    **iphone_MAPPINGS,
+    **Prompt_manager_MAPPINGS
 }
 
 # 合并所有节点显示名称映射
@@ -130,12 +132,15 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **Prompt_DISPLAY_NAME_MAPPINGS,
     **yoloCropV11_DISPLAY_NAME_MAPPINGS,
     **yoloPasteV11_DISPLAY_NAME_MAPPINGS,
-    **iphone_DISPLAY_NAME_MAPPINGS
+    **iphone_DISPLAY_NAME_MAPPINGS,
+    **Prompt_manager_DISPLAY_NAME_MAPPINGS
 }
 
-# 导出
-__all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
+# 配置web资源目录
+import os
+WEB_DIRECTORY = "./web"
 
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS', 'WEB_DIRECTORY']
 
 
 import os
