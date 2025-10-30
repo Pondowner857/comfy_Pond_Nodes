@@ -42,6 +42,7 @@ from .nodes.yoloCropV11 import NODE_CLASS_MAPPINGS as yoloCropV11_MAPPINGS, NODE
 from .nodes.yoloPasteV11 import NODE_CLASS_MAPPINGS as yoloPasteV11_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as yoloPasteV11_DISPLAY_NAME_MAPPINGS
 from .nodes.iphone import NODE_CLASS_MAPPINGS as iphone_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as iphone_DISPLAY_NAME_MAPPINGS
 from .nodes.Prompt_manager import NODE_CLASS_MAPPINGS as Prompt_manager_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as Prompt_manager_DISPLAY_NAME_MAPPINGS
+from .nodes.prompt_parser import NODE_CLASS_MAPPINGS as prompt_parser_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as prompt_parser_DISPLAY_NAME_MAPPINGS
 # 合并所有节点类映射
 NODE_CLASS_MAPPINGS = {
     **yoloCrop_MAPPINGS,
@@ -86,7 +87,8 @@ NODE_CLASS_MAPPINGS = {
     **yoloCropV11_MAPPINGS,
     **yoloPasteV11_MAPPINGS,
     **iphone_MAPPINGS,
-    **Prompt_manager_MAPPINGS
+    **Prompt_manager_MAPPINGS,
+    **prompt_parser_MAPPINGS
 }
 
 # 合并所有节点显示名称映射
@@ -133,7 +135,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **yoloCropV11_DISPLAY_NAME_MAPPINGS,
     **yoloPasteV11_DISPLAY_NAME_MAPPINGS,
     **iphone_DISPLAY_NAME_MAPPINGS,
-    **Prompt_manager_DISPLAY_NAME_MAPPINGS
+    **Prompt_manager_DISPLAY_NAME_MAPPINGS,
+    **prompt_parser_DISPLAY_NAME_MAPPINGS
 }
 
 # 配置web资源目录
