@@ -3,6 +3,7 @@ import re
 class TextFormatParser:
     """
     支持动态输出端口数量的文本格式解析节点
+    根据方括号 [content] 自动提取内容
     """
     
     @classmethod
@@ -11,14 +12,10 @@ class TextFormatParser:
             "required": {
                 "text": ("STRING", {
                     "multiline": True,
-                    "default": "Category: clothing\nInstruction: Put a clothing on the model."
-                }),
-                "format_pattern": ("STRING", {
-                    "multiline": True,
-                    "default": "Category: {0}\nInstruction: {1}"
+                    "default": "Category: [clothing]\nColor: [red]\nInstruction: [Put a clothing on the model.]"
                 }),
                 "output_count": ("INT", {
-                    "default": 2,
+                    "default": 3,
                     "min": 1,
                     "max": 100,
                     "step": 1
@@ -26,74 +23,44 @@ class TextFormatParser:
             },
         }
     
-    # 初始只定义2个输出端口，其他由前端动态添加
-    RETURN_TYPES = ("STRING", "STRING")
-    RETURN_NAMES = ("输出_1", "输出_2")
+    # 定义足够多的输出端口支持动态扩展，实际显示数量由JS控制
+    RETURN_TYPES = tuple(["STRING"] * 100)
+    RETURN_NAMES = tuple([f"输出_{i+1}" for i in range(100)])
     FUNCTION = "parse_text"
     CATEGORY = "🐳Pond/prompt"
     OUTPUT_NODE = False
     
-    def parse_text(self, text, format_pattern, output_count):
+    def parse_text(self, text, output_count):
         """
-        解析文本并根据占位符数量返回对应输出
+        解析文本中所有 [content] 格式的内容
         """
         output_count = min(max(output_count, 1), 100)
         
-        # 计算占位符数量
-        placeholder_count = 0
-        for i in range(output_count):
-            if f"{{{i}}}" in format_pattern:
-                placeholder_count = i + 1
-            else:
-                break
-        
-        if placeholder_count == 0:
-            print("[TextFormatParser] 格式中没有找到占位符 {0}, {1} 等")
-            return tuple([""] * output_count)
-        
         # 规范化换行符
         text = text.replace('\r\n', '\n').replace('\r', '\n')
-        format_pattern = format_pattern.replace('\r\n', '\n').replace('\r', '\n')
         
-        # 构建正则表达式
-        regex_pattern = format_pattern
-        
-        temp_markers = []
-        for i in range(placeholder_count):
-            marker = f"<!PLACEHOLDER_{i}!>"
-            regex_pattern = regex_pattern.replace(f"{{{i}}}", marker)
-            temp_markers.append(marker)
-        
-        regex_pattern = re.escape(regex_pattern)
-        
-        for marker in temp_markers:
-            regex_pattern = regex_pattern.replace(re.escape(marker), "(.+?)")
-        
-        regex_pattern = regex_pattern.replace(r'\\n', r'\\s*\\n\\s*')
-        regex_pattern = r'^\s*' + regex_pattern + r'\s*$'
-        
-        print(f"[TextFormatParser] 占位符数量: {placeholder_count}")
-        print(f"[TextFormatParser] 输出端口数量: {output_count}")
+        # 使用正则表达式提取所有 [content] 的内容
+        # 匹配方括号内的内容,使用非贪婪匹配
+        pattern = r'\[([^\[\]]+)\]'
         
         try:
-            match = re.search(regex_pattern, text, re.DOTALL | re.MULTILINE)
+            matches = re.findall(pattern, text)
             
-            if match:
-                results = list(match.groups())
-                results = [r.strip() if r else "" for r in results]
-                
-                print(f"[TextFormatParser] 匹配成功！提取了 {len(results)} 个结果")
+            # 去除每个结果的首尾空白
+            results = [match.strip() for match in matches]
+            
+            if results:
+                print(f"[TextFormatParser] 成功提取了 {len(results)} 个方括号内容")
                 for i, r in enumerate(results):
                     print(f"[TextFormatParser] 输出_{i+1}: {r[:50]}{'...' if len(r) > 50 else ''}")
-                
-                # 补齐到output_count个
-                while len(results) < output_count:
-                    results.append("")
-                
-                return tuple(results[:output_count])
             else:
-                print(f"[TextFormatParser] 无法匹配文本")
-                return tuple([""] * output_count)
+                print(f"[TextFormatParser] 未找到任何 [content] 格式的内容")
+            
+            # 补齐或截取到output_count个
+            while len(results) < output_count:
+                results.append("")
+            
+            return tuple(results[:output_count])
                 
         except Exception as e:
             print(f"[TextFormatParser] 解析错误: {str(e)}")
